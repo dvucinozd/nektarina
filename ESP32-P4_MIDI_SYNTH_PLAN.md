@@ -1,9 +1,10 @@
 # ESP32-P4 USB-MIDI Synthesizer
 ## Koncept, arhitektura i implementacijski plan
 
-**Razvojni status (2026-09-12):** izrađeni su dokumentacijski M0 audit i početni BSP.
-Fizička potvrda ploče ostaje otvorena; M1 nije započet.
-Detalji: [M0 audit](docs/M0_HARDWARE_BSP_AUDIT.md) i [build validacija](docs/M0_VALIDATION.md).
+**Razvojni status (2026-09-13):** M0 audit/BSP i M1 audio HAL su implementirani.
+Ton, slušni prijelazi i mikrofon potvrđeni su. Soak 601.970 s prolazi na 0.1.0-m1;
+aktualni 0.1.1-m1-mic ima zaseban kratki test. M2 nije započet.
+Detalji: [trenutno stanje](docs/STATE_SUMMARY.md) i [M1 dokazi](docs/M1_AUDIO_TEST.md).
 
 **Ciljna platforma:** Guition JC-ESP32P4-M3-DEV
 **MIDI kontroler:** Nektar Impact GX49

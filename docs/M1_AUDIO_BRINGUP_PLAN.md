@@ -1,6 +1,10 @@
 # M1 - audio bring-up plan
 
-Status: planirano, nije implementirano ni testirano. Cilj je stabilan 440 Hz
+Status: implementirano i flashano; smoke tišine i DMA stop/start prolaze.
+Ton, slušni prijelazi i mikrofon potvrđeni su. Soak 601.970 s prolazi na
+0.1.0-m1; za aktualni 0.1.1-m1-mic preostaje zasebni soak.
+Dokazi i ograničenja u [M1_AUDIO_TEST](M1_AUDIO_TEST.md).
+Cilj je stabilan 440 Hz
 sinus preko onboard ES8311, uz 48 kHz audio. MIDI i USB integracija su M2/M3.
 
 ## Preduvjeti

@@ -1,0 +1,11 @@
+HOST command=? elapsed=1.016s
+I (165332) M1: command=?
+I (165332) M1: blocks=60403 dma=60403 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+HOST command=t elapsed=3.094s
+I (167402) M1: command=t
+I (167402) M1: blocks=61179 dma=61179 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (169902) M1: blocks=62116 dma=62116 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (179902) M1: blocks=65866 dma=65866 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+HOST command=? elapsed=23.188s
+I (187492) M1: command=?
+I (187492) M1: blocks=68714 dma=68714 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0

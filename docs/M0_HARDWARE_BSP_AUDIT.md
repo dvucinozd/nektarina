@@ -3,7 +3,9 @@
 Datum: 2026-09-12. Opseg: dokumentacijski audit, početni board component i build.
 Status: dokumentacijski dio izrađen; fizička potvrda ploče ostaje otvorena.
 Naknadna [COM6 provjera](M0_COM6_CHECK.md) potvrdila je P4 v1.3, 16 MB flasha
-i 32 MB PSRAM-a u postojećem firmwareu. Nije proveden flash, mjerenje napajanja ni audio test.
+i 32 MB PSRAM-a u prethodnom firmwareu. M1 je potom flashan i potvrđeni su
+ES8311 ACK, audio format i slušni test; [aktualni M1 dokaz](M1_AUDIO_TEST.md).
+Mjerenje napajanja i fizičke PCB revizije nije provedeno.
 
 ## Izvori i razina povjerenja
 
@@ -120,7 +122,8 @@ nije implementirana OTA strategija iz M15.
 2. Potvrđeno na COM6: P4 v1.3 i 16 MB flash. Postojeći firmware prepoznaje
    32 MB PSRAM i prolazi početni memorijski test na 20 MHz.
 3. Provjeriti 5 V/3V3 i način napajanja GX49, USB adapter i VBUS topologiju.
-4. Potvrditi ES8311 ACK na 0x18 te PA_CTRL polaritet/isključeno stanje.
+4. Potvrđeno u M1: ES8311 ACK na 0x18, SDP readback i funkcionalni aktivno-visoki
+   PA_CTRL kroz slušni ton/mute test. Nema električnog mjerenja GPIO11.
 5. Za M7 potvrditi C6 unutarnje veze i firmware; prije M10 potvrditi TF napajanje.
 
 Sljedeći razvojni korak je M1: audio HAL, kontrolirano uključivanje codeca i

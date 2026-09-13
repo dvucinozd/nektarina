@@ -1,0 +1,57 @@
+{
+  "software_soak_pass": true,
+  "faults": [],
+  "duration_seconds": 601.97,
+  "delta_blocks": 225739,
+  "delta_frames": 28894592,
+  "delta_dma": 225739,
+  "max_render_us": 70,
+  "fault_deltas": {
+    "deadlines": 0,
+    "write_errors": 0,
+    "short": 0,
+    "tx_q_ovf": 0,
+    "gaps": 0
+  },
+  "start": {
+    "host_seconds": 22.157,
+    "blocks": 83420,
+    "dma": 83420,
+    "render_max_us": 70,
+    "deadlines": 0,
+    "write_errors": 0,
+    "short": 0,
+    "tx_q_ovf": 0,
+    "gaps": 0,
+    "running": 1,
+    "failed": 0,
+    "device_ms": 230492
+  },
+  "end": {
+    "host_seconds": 624.11,
+    "blocks": 309159,
+    "dma": 309159,
+    "render_max_us": 70,
+    "deadlines": 0,
+    "write_errors": 0,
+    "short": 0,
+    "tx_q_ovf": 0,
+    "gaps": 0,
+    "running": 1,
+    "failed": 0,
+    "device_ms": 832462
+  },
+  "last_status": {
+    "blocks": 311419,
+    "dma": 311419,
+    "render_max_us": 70,
+    "deadlines": 0,
+    "write_errors": 0,
+    "short": 0,
+    "tx_q_ovf": 0,
+    "gaps": 0,
+    "running": 0,
+    "failed": 0,
+    "device_ms": 841362
+  }
+}

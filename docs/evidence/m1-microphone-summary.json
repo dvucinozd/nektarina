@@ -1,0 +1,25 @@
+{
+  "clock_caveat": "ADC and DAC share a clock; not absolute calibration",
+  "captures": [
+    {
+      "capture": 1,
+      "wav": "docs\\evidence\\m1-microphone-1.wav",
+      "samples": 48000,
+      "sample_rate_assumed_hz": 48000,
+      "peak_hz_100_2000": 650.7175114038768,
+      "rms_dbfs": -57.50670889496935,
+      "amplitude_440_dbfs": -95.62936132889297,
+      "clipped_samples": 0
+    },
+    {
+      "capture": 2,
+      "wav": "docs\\evidence\\m1-microphone-2.wav",
+      "samples": 48000,
+      "sample_rate_assumed_hz": 48000,
+      "peak_hz_100_2000": 440.0007614431675,
+      "rms_dbfs": -39.26034146733641,
+      "amplitude_440_dbfs": -36.283080715690986,
+      "clipped_samples": 0
+    }
+  ]
+}

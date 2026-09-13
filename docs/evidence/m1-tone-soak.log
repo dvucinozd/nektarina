@@ -1,0 +1,100 @@
+HOST command=2 elapsed=1.016s
+I (209362) M1: command=2
+I (209362) M1: blocks=76916 dma=76916 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (209862) M1: blocks=77101 dma=77101 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+HOST command=m elapsed=4.032s
+I (212372) M1: command=m
+I (212372) M1: blocks=78043 dma=78043 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+HOST command=t elapsed=7.125s
+I (215472) M1: command=t
+I (215472) M1: blocks=79205 dma=79205 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+HOST command=x elapsed=10.203s
+I (218542) M1: command=x
+I (218542) M1: blocks=80356 dma=80356 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (219642) M1: blocks=80372 dma=80372 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=0 failed=0
+HOST command=? elapsed=13.172s
+I (221512) M1: command=?
+I (221512) M1: blocks=80372 dma=80372 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=0 failed=0
+HOST command=s elapsed=14.016s
+I (222352) M1: command=s
+I (222352) M1: blocks=80372 dma=80372 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=0 failed=0
+HOST command=t elapsed=17.110s
+I (225452) M1: command=t
+I (225452) M1: blocks=81529 dma=81529 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (229452) M1: blocks=83028 dma=83028 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+HOST command=? elapsed=22.157s
+I (230492) M1: command=?
+I (230492) M1: blocks=83420 dma=83420 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (239392) M1: blocks=86756 dma=86756 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (249392) M1: blocks=90506 dma=90506 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (259392) M1: blocks=94256 dma=94256 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (269392) M1: blocks=98006 dma=98006 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (279392) M1: blocks=101756 dma=101756 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (289392) M1: blocks=105506 dma=105506 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (299392) M1: blocks=109256 dma=109256 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (309392) M1: blocks=113006 dma=113006 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (319392) M1: blocks=116756 dma=116756 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (329392) M1: blocks=120506 dma=120506 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (339392) M1: blocks=124256 dma=124256 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (349392) M1: blocks=128006 dma=128006 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (359392) M1: blocks=131756 dma=131756 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (369392) M1: blocks=135506 dma=135506 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (379392) M1: blocks=139256 dma=139256 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (389392) M1: blocks=143006 dma=143006 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (399392) M1: blocks=146756 dma=146756 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (409392) M1: blocks=150506 dma=150506 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (419392) M1: blocks=154256 dma=154256 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (429392) M1: blocks=158006 dma=158006 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (439392) M1: blocks=161756 dma=161756 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (449392) M1: blocks=165506 dma=165506 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (459392) M1: blocks=169256 dma=169256 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (469392) M1: blocks=173006 dma=173006 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (479392) M1: blocks=176756 dma=176756 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (489392) M1: blocks=180506 dma=180506 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (499392) M1: blocks=184256 dma=184256 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (509392) M1: blocks=188006 dma=188006 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (519392) M1: blocks=191756 dma=191756 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (529392) M1: blocks=195506 dma=195506 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (539392) M1: blocks=199256 dma=199256 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (549392) M1: blocks=203006 dma=203006 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (559392) M1: blocks=206756 dma=206756 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (569392) M1: blocks=210506 dma=210506 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (579392) M1: blocks=214256 dma=214256 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (589392) M1: blocks=218006 dma=218006 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (599392) M1: blocks=221756 dma=221756 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (609392) M1: blocks=225506 dma=225506 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (619392) M1: blocks=229256 dma=229256 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (629392) M1: blocks=233006 dma=233006 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (639392) M1: blocks=236756 dma=236756 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (649392) M1: blocks=240506 dma=240506 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (659392) M1: blocks=244256 dma=244256 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (669392) M1: blocks=248006 dma=248006 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (679392) M1: blocks=251756 dma=251756 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (689392) M1: blocks=255506 dma=255506 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (699392) M1: blocks=259256 dma=259256 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (709392) M1: blocks=263006 dma=263006 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (719392) M1: blocks=266756 dma=266756 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (729392) M1: blocks=270506 dma=270506 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (739392) M1: blocks=274256 dma=274256 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (749392) M1: blocks=278006 dma=278006 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (759392) M1: blocks=281756 dma=281756 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (769392) M1: blocks=285506 dma=285506 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (779392) M1: blocks=289256 dma=289256 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (789392) M1: blocks=293006 dma=293006 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (799392) M1: blocks=296756 dma=296756 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (809392) M1: blocks=300506 dma=300506 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (819392) M1: blocks=304256 dma=304256 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (829392) M1: blocks=308006 dma=308006 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+HOST command=? elapsed=624.110s
+I (832462) M1: command=?
+I (832462) M1: blocks=309159 dma=309159 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+HOST command=m elapsed=627.000s
+I (835352) M1: command=m
+I (835352) M1: blocks=310244 dma=310244 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+HOST command=x elapsed=630.141s
+I (838482) M1: command=x
+I (838482) M1: blocks=311417 dma=311417 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=1 failed=0
+I (839282) M1: blocks=311419 dma=311419 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=0 failed=0
+HOST command=? elapsed=633.016s
+I (841362) M1: command=?
+I (841362) M1: blocks=311419 dma=311419 render_max_us=70 deadlines=0 write_errors=0 short=0 tx_q_ovf=0 gaps=0 running=0 failed=0

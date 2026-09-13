@@ -49,4 +49,5 @@ novi je generiran iz ispravljenih defaults. Rezultat builda je u
 
 Silicijska revizija nije isto što i PCB revizija: fizička oznaka carrier ploče
 još nije potvrđena. Serijska provjera ne potvrđuje ES8311 ACK/PA polaritet,
-USB napajanje GX49, C6 veze niti audio put. Za to slijedi BSP/audio bring-up.
+USB napajanje GX49, C6 veze niti audio put. Naknadni audio bring-up i potvrde
+codeca/PA-a zapisani su u [M1 izvještaju](M1_AUDIO_TEST.md).
