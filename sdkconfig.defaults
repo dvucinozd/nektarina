@@ -1,0 +1,7 @@
+CONFIG_IDF_TARGET="esp32p4"
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+# COM6: esptool and existing firmware boot both identify silicon v1.3.
+CONFIG_ESP32P4_SELECTS_REV_LESS_V3=y
+CONFIG_ESP32P4_REV_MIN_100=y
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_360=y
+# M0 uses internal RAM only; PSRAM timing awaits our own bring-up.

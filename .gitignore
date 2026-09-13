@@ -1,0 +1,9 @@
+/build*/
+/sdkconfig
+/sdkconfig.old
+/tmp/
+/managed_components/
+/AGENTS.md
+/DEVICES_MANUALS/
+/DEVICES/_MANUALS/
+/backups/
