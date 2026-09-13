@@ -1,32 +1,34 @@
-# Nastavak nakon M1 audio/mikrofon testa - 2026-09-13
+# Nastavak nakon završenog M1 - 2026-09-13
 
 ## Prva radnja
 
-Pregledati Git stanje i [STATE_SUMMARY](STATE_SUMMARY.md). M1 `0.1.1-m1-mic`
-je na COM6, utišan i s DMA stop. Korisnik je potvrdio postojeći backup.
-**Pregledati rezultate i odlučiti o sljedećem razvojnom koraku s korisnikom.**
-Funkcionalni ton/prijelazi i mikrofon potvrđeni su; ne tražiti iste potvrde ponovno.
-Soak 601.970 s pripada 0.1.0-m1. Ako mic verzija ostaje baseline, ponoviti soak
-na njoj. Sljedeća razvojna faza M2 traži lokaciju postojećeg USB Host izvora/API-ja.
+Pregledati Git stanje i [STATE_SUMMARY](STATE_SUMMARY.md), zatim
+[M2 plan integracije](M2_USB_HOST_ADOPTION_PLAN.md). M1 0.1.1-m1-mic na COM6
+je kvalificirani funkcionalni baseline, utišan, PA off i DMA stop.
+Točan hash, završni soak i ograničenja mjerenja su u [M1 izvještaju](M1_AUDIO_TEST.md).
 
-## Redoslijed rada
+## Sljedeći razvojni korak
 
-1. Pročitati [M1 izvještaj](M1_AUDIO_TEST.md), uključujući hash granice dokaza.
-2. Ne ponavljati flash bez promjene koda; boot ostaje tih.
-3. Za mic capture prvo `s`, zatim `r` za tišinu ili `t` pa `r` za ton.
-4. Zatvoriti preostale kriterije ili prijeći na korisnički odobrenu M2 integraciju.
-5. Zapisati stvarni flash identitet, rezultate i neriješene točke.
+Izdvojiti minimalni host service i MIDI client/adapter iz postojećeg
+`D:/AI/PAJONIIIR-M3`, referentni commit
+`ccebdb96e302d8be8bf2b1269ee8afdad583e430`. Izvor je pregledan bez izmjena;
+nije još kopiran niti integriran. Točne datoteke i testovi su u M2 planu.
+
+1. Provjeriti izvorni commit/stanje i lokalne upute prije prijenosa.
+2. Zadržati host lifecycle; prilagoditi FLX4 device filter i MIDI callback
+   GX49 adapteru, bez UAC/MSC/LED/control_link i tuđih BSP pretpostavki.
+3. Build za P4 v1.3 i ciljani descriptor/lifecycle testovi.
+4. Prije fizičkog M2 testa potvrditi USB priključak, kabel/adapter i napajanje
+   GX49; zatim snimiti stvarne deskriptore i connect/disconnect/reconnect.
+5. Spremiti mjerljive brojače/dokaze. Parser i synth note pripadaju M3/M4.
 
 ## Što ne treba ponavljati
 
-- Ne pretpostavljati rev3.x: silicij v1.3 je već očitan s uređaja.
-- Ne pretraživati druge projekte radi GPIO-a; lokalni M0 audit već ima izvore.
-- Ne prikazivati postojeći PSRAM test kao naš audio/runtime PASS.
-- Ne pokretati M2, Wi-Fi, SoundFont ili OTA dok ne dođu na red.
+- Backup imagea korisnik već ima. Ton i uredne prijelaze već je potvrdio.
+- Završni desetominutni soak aktualne mic verzije dovršen je; ne ponavljati ga
+  bez nove promjene, greške ili razloga za regresiju.
+- Ne flashati isti image bez potrebe. Boot i dalje treba biti tih.
+- Ne preuzimati pinove, napajanje ili PSRAM postavke iz drugog projekta.
 
-## Potrebno od korisnika tijekom razvoja
-
-- Fizička oznaka/revizija PCB-a još nije potvrđena; zvučnik, napajanje i slušni test jesu.
-- Za kasniji M2: putanja postojećeg USB Host rješenja i USB/GX49 povezivanje.
-
-Nije postavljen automatski podsjetnik; nastavak počinje novim korisnikovim zahtjevom.
+PCB fizička oznaka i neovisna clock kalibracija ostaju nezabilježeni.
+C6, SD, SoundFont, Wi-Fi i OTA nisu dio sljedećeg koraka.

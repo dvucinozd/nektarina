@@ -1,15 +1,15 @@
 # M1 - audio bring-up plan
 
-Status: implementirano i flashano; smoke tišine i DMA stop/start prolaze.
-Ton, slušni prijelazi i mikrofon potvrđeni su. Soak 601.970 s prolazi na
-0.1.0-m1; za aktualni 0.1.1-m1-mic preostaje zasebni soak.
+Status: **M1 funkcionalno završen**. Ton, slušni prijelazi i mikrofon potvrđeni.
+Završni soak: 602.020 s kontinuiranog tona na 0.1.1-m1-mic, bez zabilježenih softverskih grešaka.
 Dokazi i ograničenja u [M1_AUDIO_TEST](M1_AUDIO_TEST.md).
 Cilj je stabilan 440 Hz
 sinus preko onboard ES8311, uz 48 kHz audio. MIDI i USB integracija su M2/M3.
 
 ## Preduvjeti
 
-- Provjeren backup cijelog flasha i potvrđena odgovarajuća rev1.x build konfiguracija.
+- Korisnik je potvrdio postojeći backup imagea; agent ga nije provjeravao.
+  Rev1.x build konfiguracija i stvarni flash identitet potvrđeni su.
 - Potvrđen ES8311 na 7-bit I2C adresi 0x18 i PA_CTRL polaritet.
 - Provjeren zvučnik i napajanje. NS4150 speaker izlaz je diferencijalan, nije line-out.
 - Pinovi se uzimaju iz BSP-a, ne dupliciraju po driverima.
@@ -31,9 +31,10 @@ sinus preko onboard ES8311, uz 48 kHz audio. MIDI i USB integracija su M2/M3.
 7. Dijagnostiku izvan audio taska: broj blokova, maksimalno vrijeme rendera,
    I2S greške, nepotpuni upisi i underrun/deadline brojači s jasnom definicijom.
 
-## Predloženi kriteriji prihvaćanja M1
+## Kriteriji prihvaćanja M1
 
-Ovo su kriteriji za budući test, ne postignuti rezultati:
+Rezultati su u završnoj kvalifikaciji M1 izvještaja. Funkcionalni kriteriji su
+zadovoljeni; apsolutna clock kalibracija i izravno mjerenje underruna nisu izvedeni:
 
 - Build prolazi za v1.3; zapisani hash, konfiguracija i stvarni flash/boot dokaz.
 - Potvrđeno 48 kHz i 440 Hz (mjerenjem ako je oprema dostupna; sluh sam nije

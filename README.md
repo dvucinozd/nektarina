@@ -3,10 +3,10 @@
 Samostalni ESP32-P4 USB-MIDI synthesizer za Nektar Impact GX49.
 
 Arhitektura: [izvorni plan](ESP32-P4_MIDI_SYNTH_PLAN.md).
-Trenutni korak: [M0 hardware/BSP audit](docs/M0_HARDWARE_BSP_AUDIT.md).
+M1 funkcionalno završen; sljedeći korak je [M2 integracija USB hosta](docs/M2_USB_HOST_ADOPTION_PLAN.md).
 
 Za nastavak prvo pročitaj [trenutno stanje](docs/STATE_SUMMARY.md) i
-[sljedeću sesiju](docs/NEXT_SESSION.md). M1 je pripremljen u
+[sljedeću sesiju](docs/NEXT_SESSION.md). M1 kriteriji su u
 [audio bring-up planu](docs/M1_AUDIO_BRINGUP_PLAN.md).
 
 Projekt sada sadrži BSP i M1 audio HAL. Boot provjerava ES8311 i šalje tišinu
@@ -28,6 +28,6 @@ uvode se u pripadajućim fazama uz provjeru stvarnog hardvera.
 
 Na COM6 potvrđen je P4 v1.3; defaults su usklađeni na rev. 1.0-1.99 i 360 MHz.
 Instaliran je M1 `0.1.1-m1-mic`: ton i mikrofon potvrđeni, izmjereno 440.001 Hz
-u snimci. Prethodni `0.1.0-m1` prošao je 601.970 s tona bez softverskih grešaka.
+u snimci. Aktualni image prošao je 602.020 s tona bez zabilježenih softverskih grešaka.
 Granice dokaza i aktualni hash: [M1 rezultati](docs/M1_AUDIO_TEST.md).
 Povijest: [M0 validacija](docs/M0_VALIDATION.md).

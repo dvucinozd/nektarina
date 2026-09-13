@@ -1,9 +1,9 @@
 # ESP32-P4 USB-MIDI Synthesizer
 ## Koncept, arhitektura i implementacijski plan
 
-**Razvojni status (2026-09-13):** M0 audit/BSP i M1 audio HAL su implementirani.
-Ton, slušni prijelazi i mikrofon potvrđeni su. Soak 601.970 s prolazi na 0.1.0-m1;
-aktualni 0.1.1-m1-mic ima zaseban kratki test. M2 nije započet.
+**Razvojni status (2026-09-13):** M0 audit/BSP implementiran; fizičke M0 točke
+ostaju djelomično otvorene. M1 funkcionalno završen: 602.020 s kontinuiranog tona na 0.1.1-m1-mic, bez zabilježenih softverskih grešaka.
+M2 izvor u PAJONIIIR-M3 pregledan; [plan integracije](docs/M2_USB_HOST_ADOPTION_PLAN.md).
 Detalji: [trenutno stanje](docs/STATE_SUMMARY.md) i [M1 dokazi](docs/M1_AUDIO_TEST.md).
 
 **Ciljna platforma:** Guition JC-ESP32P4-M3-DEV

@@ -6,8 +6,9 @@ Samostalni USB-MIDI synthesizer: Nektar GX49 -> postojeći USB Host -> MIDI queu
 -> synth -> I2S/ES8311. Prvi cilj: stabilna 16-glasovna sinteza na 48 kHz.
 
 **M0 dokumentacijski i build dio je završen. Serijska identifikacija je završena.
-Fizički M0 je djelomično otvoren. M1 audio put, slušni test i mikrofon su potvrđeni.
-Soak 601.970 s prolazi na 0.1.0-m1; noviji mic image ima zaseban kratki smoke.**
+Fizički M0 je djelomično otvoren. M1 je funkcionalno završen:**
+602.020 s kontinuiranog tona na 0.1.1-m1-mic, bez zabilježenih softverskih grešaka.
+M2 izvor je pregledan; implementacija integracije još nije započeta.
 Korisnik je odobrio nastavak 2026-09-13 i potvrdio postojeći backup.
 
 ## Što postoji
@@ -38,15 +39,16 @@ komponenta 440 Hz je 59.35 dB iznad utišane snimke. ADC/DAC dijele clock.
 | --- | --- |
 | PCB revizija | Potvrditi fizičku oznaku; silicijska v1.3 nije PCB revizija |
 | ES8311 i PA | ACK/format i aktivno-visoki PA funkcionalno potvrđeni |
-| Audio | Slušno čist ton/prijelazi, soak starog imagea PASS; mic image kratki smoke PASS |
+| Audio | M1 završen: slušni test, mikrofon i 602.020 s soak aktualnog imagea PASS |
 | Mjerenja | Apsolutni clock treba neovisnu referencu; mic nije neovisna kalibracija |
 | Napajanje | 5 V/3V3, speaker i način USB napajanja GX49 |
-| USB Host | Dobiti lokaciju postojećeg izvornog koda/API-ja prije M2 |
+| USB Host | Izvor D:/AI/PAJONIIIR-M3 pregledan; slijedi adapter prema M2 planu |
 | C6/SD | C6 veze/firmware i TF napajanje potvrditi prije M7/M10 |
 
 ## Dokumenti
 
 - [Handoff za sljedeću sesiju](NEXT_SESSION.md)
+- [M2 izvori i plan integracije](M2_USB_HOST_ADOPTION_PLAN.md)
 - [M1 plan i kriteriji](M1_AUDIO_BRINGUP_PLAN.md)
 - [M1 implementacija, naredbe i dokazi](M1_AUDIO_TEST.md)
 - [Hardware/BSP audit](M0_HARDWARE_BSP_AUDIT.md)

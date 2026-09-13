@@ -33,6 +33,7 @@ Serijski terminal COM6, 115200 baud (jedan vlasnik porta):
 | `x` | Rampa do tišine, PA off i zaustavljanje DMA-a |
 | `s` | Pokretanje DMA-a s tišinom |
 | `?` | Ispis brojača |
+| `r` | Jednosekundna mikrofonska snimka i UART izvoz |
 
 Glasnoća se mijenja po uzorku, bez naglog skoka. Prije gašenja PA-a šalje se
 najmanje osam tihih blokova. Status ispisuje upravljački task približno svakih
@@ -62,7 +63,7 @@ SHA256: `d66677c52ca01cbce5a9ae96cac5d3e0df4d280524153b2e5a9924c8e22da752`.
 Flash na COM6 završen s exit code 0 i esptool hash verifikacijom sva tri
 zapisana segmenta: bootloader, particijska tablica i aplikacija.
 Dokaz: [flash log](evidence/m1-flash.log).
-Završeci redaka i završni razmaci flash loga normalizirani su za Git.
+Završeci redaka i završni razmaci spremljenih logova normalizirani su za Git.
 
 [30-sekundni boot/smoke](evidence/m1-boot-smoke.log) potvrđuje:
 
@@ -107,8 +108,8 @@ Build prolazi; na COM6 je flashana verzija **0.1.1-m1-mic** s hash verifikacijom
 Aplikacija 288256 bajtova; SHA256
 `a5a4b4571886f3624d8f28d5af34f502c279c3691c18f76df7af9b03afa59cff`.
 Dokaz: [mic flash](evidence/m1-mic-flash.log), [mic capture](evidence/m1-microphone.log).
-Ova verzija ima 70-sekundni smoke s dvije snimke i mute/stop; nije ponovljen
-10-minutni soak na novom imageu. Prethodni soak ne pripisivati novom hashu.
+Prvi test ove verzije bio je 70-sekundni smoke s dvije snimke i mute/stop.
+Zaseban završni soak aktualnog imagea opisan je na kraju ovog dokumenta.
 
 | Snimka | Vrh 100-2000 Hz | RMS | Amplituda na 440 Hz | Clipping |
 | --- | --- | --- | --- | --- |
@@ -129,6 +130,42 @@ Ponovljivo: `tools/analyze_microphone.py` (numpy) i `tools/analyze_m1_capture.py
 Sve TX greške nula tijekom capturea, render maksimum 67 us. Nakon testa
 **PA off, DMA zaustavljen, COM6 oslobođen**.
 
-M1 funkcionalni audio put i frekvencija u mikrofonskoj snimci su potvrđeni.
-Otvoreno: apsolutna clock kalibracija, 10-minutni soak mic imagea ako se zadržava
-kao kvalificirani baseline, te ostale fizičke M0 točke. Nema MIDI latencijskog testa.
+## Završna kvalifikacija M1 - aktualni image
+
+**M1 funkcionalno završen 2026-09-13.** Prije završnog testa aplikacija je
+očitana iz flasha od 0x10000, duljine 288256 bajtova. SHA256 readbacka jednak je
+`a5a4b4571886f3624d8f28d5af34f502c279c3691c18f76df7af9b03afa59cff`.
+Nije bilo promjene koda, rebuilda ni novog flashanja tijekom ovog zatvaranja.
+[Boot identitet](evidence/m1-final-identity.log) potvrđuje 0.1.1-m1-mic i codec
+readback. Početak identity loga sadrži fragment prethodnog UART ispisa prije
+namjernog reseta; taj reset nije dio soak prozora.
+
+Aktualni image prošao je **602.020 s** neprekinutog tona između eksplicitnih
+statusnih checkpointa. Napredak: **225758 blokova**, **28897024
+frameova**, **225758 DMA completion događaja**. Maksimum renderiranja
+**66 us** naspram cilja 1333 us; sve delte deadlines/write_errors/short/
+tx_q_ovf/gaps su **0**, nema reseta ni failed stanja.
+
+Tijekom istog neprekinutog tona izvedene su dvije mikrofonske snimke po 48000
+uzoraka (naredbe na 180 s i 420 s host vremena), uključujući UART izvoz:
+
+| Snimka | Procijenjeni vrh | RMS | Clipping |
+| --- | --- | --- | --- |
+| 1 | 440.001 Hz | -38.95 dBFS | 0 |
+| 2 | 439.998 Hz | -39.18 dBFS | 0 |
+
+Ovo je potvrda tona relativno prema zajedničkom ADC/DAC clocku. Apsolutna
+kalibracija 48 kHz/440 Hz neovisnim instrumentom nije provedena. TX queue i
+service-gap brojači nisu izravno mjerenje hardverskog underruna. Ranije
+korisničke potvrde čistog tona i urednih prijelaza ostaju slušni dokaz.
+
+Dokazi: [završni soak log](evidence/m1-final-soak.log),
+[soak JSON](evidence/m1-final-soak-summary.json),
+[mikrofonska analiza](evidence/m1-final-mic-summary.json),
+[WAV 1](evidence/m1-final-mic-1.wav), [WAV 2](evidence/m1-final-mic-2.wav).
+Ponoviti analizu s `tools/analyze_m1_capture.py` i `tools/analyze_microphone.py`.
+Nakon testa `m`, zatim `x`: **izlaz tih, PA off, DMA stop, running=0, failed=0**.
+Serijski capture je završen i COM6 oslobođen.
+
+Preostale fizičke M0 provjere (PCB oznaka, USB napajanje, C6/SD) ostaju zasebne.
+Nema još USB/MIDI ni key-to-audio latencijskog testa.
