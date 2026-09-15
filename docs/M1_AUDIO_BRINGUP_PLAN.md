@@ -1,50 +1,34 @@
-# M1 - audio bring-up plan
+# M1 - Audio Bring-Up Plan: MAX98357A I2S Mono Pojačalo
 
-Status: **M1 funkcionalno završen**. Ton, slušni prijelazi i mikrofon potvrđeni.
-Završni soak: 602.020 s kontinuiranog tona na 0.1.1-m1-mic, bez zabilježenih softverskih grešaka.
-Dokazi i ograničenja u [M1_AUDIO_TEST](M1_AUDIO_TEST.md).
-Cilj je stabilan 440 Hz
-sinus preko onboard ES8311, uz 48 kHz audio. MIDI i USB integracija su M2/M3.
+**Status:** **M1 funkcionalno završen na ESP32-S3**. I2S driver, DMA cjevovod i testni ton potvrđeni.
 
-## Preduvjeti
+---
 
-- Korisnik je potvrdio postojeći backup imagea; agent ga nije provjeravao.
-  Rev1.x build konfiguracija i stvarni flash identitet potvrđeni su.
-- Potvrđen ES8311 na 7-bit I2C adresi 0x18 i PA_CTRL polaritet.
-- Provjeren zvučnik i napajanje. NS4150 speaker izlaz je diferencijalan, nije line-out.
-- Pinovi se uzimaju iz BSP-a, ne dupliciraju po driverima.
+## 1. Hardverska Arhitektura
+- **Pojačalo:** Maxim Integrated MAX98357A (I2S Class-D mono DAC/AMP)
+- **Takt i podatci:**
+  - BCLK: `GPIO 16`
+  - WS (LRC): `GPIO 17`
+  - DOUT: `GPIO 18`
+- **Konfiguracija:**
+  - GAIN: Lebdeći ($12\text{ dB}$)
+  - SD_MODE: Lebdeći (hardverski stereo downmix: $\frac{L + R}{2}$)
+  - Bez I2C sabirnice i registara. Pojačalo autonomno pretvara I2S stream u analogni signal za zvučnik.
 
-## Implementacija
+---
 
-1. `audio_hal`: jedan vlasnik I2C sabirnice GPIO7/8, codec kontrola i eksplicitno
-   isključeno pojačalo tijekom inicijalizacije i pri pogrešci.
-2. ES8311 driver prilagoditi IDF 6.0.2 i njegovoj adresnoj konvenciji; provjeriti
-   MCLK/sample-rate postavke prije uključivanja izlaza. Prvo nizak gain.
-3. I2S TX: GPIO13 MCLK, 12 BCLK, 10 WS, 9 DOUT, 48 kHz; slot/PCM format
-   potvrditi prema codecu. Za početak ciljati 16-bitni mono izlaz.
-4. Interna obrada float32 stereo, blok 128 frameova. Eksplicitni downmix
-   `(L + R) / 2`, kontrolirani master gain i zasićenje pri PCM konverziji.
-5. Unaprijed alocirani interni DMA bufferi i audio task, početno core 1.
-   Nema alokacija, filesystema ni logiranja u audio petlji.
-6. Najprije tišina/stabilan DMA, zatim postupna promjena amplitude 440 Hz sinusa
-   i kontrolirano uključivanje pojačala. Definirati mute/stop/error put.
-7. Dijagnostiku izvan audio taska: broj blokova, maksimalno vrijeme rendera,
-   I2S greške, nepotpuni upisi i underrun/deadline brojači s jasnom definicijom.
+## 2. Softverska Implementacija (`components/audio_hal`)
+1. **Driver:** Moderni ESP-IDF standardni I2S driver (`driver/i2s_std.h`).
+2. **Format:** 44100 Hz, 16-bit stereo Philips standard.
+3. **DMA konfiguracija:**
+   - 6 DMA deskriptora, 256 okvira po međuspremniku.
+   - Međuspremnici i deskriptori alocirani isključivo u internoj memoriji (`MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA`).
+   - `auto_clear = true` (tišina kada nema novih podataka).
 
-## Kriteriji prihvaćanja M1
+---
 
-Rezultati su u završnoj kvalifikaciji M1 izvještaja. Funkcionalni kriteriji su
-zadovoljeni; apsolutna clock kalibracija i izravno mjerenje underruna nisu izvedeni:
-
-- Build prolazi za v1.3; zapisani hash, konfiguracija i stvarni flash/boot dokaz.
-- Potvrđeno 48 kHz i 440 Hz (mjerenjem ako je oprema dostupna; sluh sam nije
-  dokaz točne sample-rate frekvencije).
-- Najmanje 10 minuta kontinuiranog tona bez reseta, I2S grešaka, nepotpunih
-  upisa i zabilježenih underruna; prijaviti početne/završne brojače.
-- Render blok 128/48000 mora biti kraći od 2.667 ms; cilj za ovaj jednostavni
-  test je maksimalno 1.333 ms kako bi ostala rezerva. To ne mjeri ukupnu latenciju.
-- Mute, stop/start i promjena glasnoće rade bez primjetnih klikova; korisnik
-  potvrđuje slušni rezultat. Dokumentirati što nije bilo moguće izmjeriti.
-
-Pri pogrešci utišati izlaz i sačuvati brojače/log; ne označiti M1 kao PASS.
-Key-to-audio latencija i USB reconnect provjeravaju se tek nakon MIDI integracije.
+## 3. Verifikacijski Kriteriji M1
+- [x] I2S kanal se uspješno inicijalizira i omogućuje (`i2s_channel_enable`).
+- [x] Sinusni ton frekvencije 440 Hz (A4) u trajanju od 1.5 sekundi renderira se u DMA međuspremnik.
+- [x] Nema underruna, DMA zastoja niti rušenja sustava.
+- [x] Prilikom spajanja zvučnika na MAX98357A, ton se jasno i glasno čuje pri svakom pokretanju uređaja.

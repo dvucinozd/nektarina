@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-set(IDF_TARGET esp32p4 CACHE STRING "Target SoC")
-set(PROJECT_VER "0.1.1-m1-mic")
+set(IDF_TARGET esp32s3 CACHE STRING "Target SoC")
+set(PROJECT_VER "0.2.0-s3-midi")
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(nektar_p4)
+project(nektar_s3_midi)

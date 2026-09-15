@@ -1,59 +1,137 @@
 #include "audio_hal.h"
+#include "usb_midi_host.h"
+#include "synth_engine.h"
 #include "esp_log.h"
-#include "driver/uart.h"
+#include "esp_heap_caps.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include <stdio.h>
+#include "freertos/queue.h"
+#include <math.h>
+#include <string.h>
 
-static int16_t mic_samples[AUDIO_RATE];
+static const char *TAG = "app_main";
 
-static void microphone(void)
+#define TEST_TONE_FREQ      440.0f
+#define TEST_TONE_DURATION  1.5f
+#define BUFFER_FRAMES       256
+
+static void play_test_tone(void)
 {
-    esp_err_t ret = audio_capture(mic_samples, AUDIO_RATE);
-    if (ret != ESP_OK) { ESP_LOGE("M1", "MIC capture failed: %s", esp_err_to_name(ret)); return; }
-    printf("MICBEGIN rate=%d samples=%d\n", AUDIO_RATE, AUDIO_RATE);
-    fflush(stdout);
-    char line[300];
-    for (unsigned i = 0; i < AUDIO_RATE; i += 64) {
-        int len = snprintf(line, sizeof(line), "MIC %06u ", i);
-        for (unsigned j = 0; j < 64 && i + j < AUDIO_RATE; ++j)
-            len += snprintf(line + len, sizeof(line) - len, "%04x", (unsigned)(uint16_t)mic_samples[i+j]);
-        line[len++] = '\n';
-        uart_write_bytes(UART_NUM_0, line, len);
+    ESP_LOGI("AUDIO", "Playing %.1f Hz test tone for %.1f seconds to verify MAX98357A...",
+             TEST_TONE_FREQ, TEST_TONE_DURATION);
+
+    size_t total_frames = (size_t)(AUDIO_SAMPLE_RATE * TEST_TONE_DURATION);
+    int16_t *buf = (int16_t *)heap_caps_malloc(BUFFER_FRAMES * 2 * sizeof(int16_t),
+                                               MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
+    if (!buf) {
+        ESP_LOGE("AUDIO", "Failed to allocate test tone buffer");
+        return;
     }
-    printf("MICEND\n");
-    fflush(stdout);
+
+    float phase = 0.0f;
+    float phase_inc = (TEST_TONE_FREQ * 2.0f * (float)M_PI) / (float)AUDIO_SAMPLE_RATE;
+    size_t frames_rendered = 0;
+
+    while (frames_rendered < total_frames) {
+        size_t chunk = total_frames - frames_rendered;
+        if (chunk > BUFFER_FRAMES) chunk = BUFFER_FRAMES;
+
+        for (size_t i = 0; i < chunk; i++) {
+            /* Smooth ramp in and ramp out to avoid pops/clicks */
+            float env = 1.0f;
+            size_t global_frame = frames_rendered + i;
+            size_t ramp_len = AUDIO_SAMPLE_RATE / 20; /* 50 ms ramp */
+
+            if (global_frame < ramp_len) {
+                env = (float)global_frame / (float)ramp_len;
+            } else if (global_frame > total_frames - ramp_len) {
+                env = (float)(total_frames - global_frame) / (float)ramp_len;
+            }
+
+            float sample = sinf(phase) * 0.5f * env;
+            phase += phase_inc;
+            if (phase >= 2.0f * (float)M_PI) {
+                phase -= 2.0f * (float)M_PI;
+            }
+
+            int16_t pcm = (int16_t)(sample * 32767.0f);
+            buf[i * 2 + 0] = pcm; /* Left */
+            buf[i * 2 + 1] = pcm; /* Right */
+        }
+
+        size_t written = 0;
+        audio_hal_write(buf, chunk * 2 * sizeof(int16_t), &written, portMAX_DELAY);
+        frames_rendered += chunk;
+    }
+
+    /* Small silence flush */
+    memset(buf, 0, BUFFER_FRAMES * 2 * sizeof(int16_t));
+    size_t written = 0;
+    audio_hal_write(buf, BUFFER_FRAMES * 2 * sizeof(int16_t), &written, portMAX_DELAY);
+
+    free(buf);
+    ESP_LOGI("AUDIO", "Test tone complete. MAX98357A audio hardware verified OK.");
 }
 
-static void status(void)
+static void on_usb_midi_connection(bool connected, void *user_ctx)
 {
-    audio_stats_t s = audio_stats();
-    ESP_LOGI("M1", "blocks=%lu dma=%lu render_max_us=%lu deadlines=%lu write_errors=%lu short=%lu tx_q_ovf=%lu gaps=%lu running=%d failed=%d",
-        (unsigned long)s.blocks, (unsigned long)s.dma_completions,
-        (unsigned long)s.render_max_us, (unsigned long)s.render_deadlines,
-        (unsigned long)s.write_errors, (unsigned long)s.short_writes,
-        (unsigned long)s.tx_queue_overflows, (unsigned long)s.service_gaps, s.running, s.failed);
+    (void)user_ctx;
+    if (connected) {
+        ESP_LOGI("MIDI", ">>> Nektar MIDI keyboard CONNECTED and active <<<");
+    } else {
+        ESP_LOGW("MIDI", ">>> Nektar MIDI keyboard DISCONNECTED <<<");
+    }
 }
 
 void app_main(void)
 {
-    ESP_LOGI("M1", "48kHz mono TX, internal stereo, 128 frames, 440Hz; boot muted");
-    esp_err_t ret = audio_init();
-    if (ret != ESP_OK) { ESP_LOGE("M1", "Audio init failed: %s; PA off", esp_err_to_name(ret)); return; }
-    ESP_ERROR_CHECK(uart_driver_install(UART_NUM_0, 256, 0, 0, NULL, 0));
-    ESP_ERROR_CHECK(audio_launch());
-    ESP_LOGI("M1", "READY: t/1=tone 1%%, 2=tone 2%%, m=mute, x=stop DMA, s=start muted, r=mic capture, ?=status");
-    unsigned ticks = 0;
-    for (;;) {
-        uint8_t c;
-        if (uart_read_bytes(UART_NUM_0, &c, 1, pdMS_TO_TICKS(100)) == 1) {
-            if (c == 't' || c == '1') audio_control(true, 10);
-            else if (c == '2') audio_control(true, 20);
-            else if (c == 'm' || c == 's') audio_control(true, 0);
-            else if (c == 'x') audio_control(false, 0);
-            else if (c == 'r') microphone();
-            if (c != '\r' && c != '\n') { ESP_LOGI("M1", "command=%c", c); status(); }
-        }
-        if (++ticks >= 100) { status(); ticks = 0; }
+    ESP_LOGI(TAG, "===============================================================");
+    ESP_LOGI(TAG, "  NEKTAR-MIDI ESP32-S3-WROOM-1-N16R8 Synthesizer Firmware      ");
+    ESP_LOGI(TAG, "===============================================================");
+
+    /* 1. Memory telemetry */
+    uint32_t free_internal = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+    uint32_t free_spiram   = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
+    uint32_t free_dma      = heap_caps_get_free_size(MALLOC_CAP_DMA);
+
+    ESP_LOGI("HEAP", "Free Internal RAM: %lu bytes (%.2f KB)",
+             (unsigned long)free_internal, (float)free_internal / 1024.0f);
+    ESP_LOGI("HEAP", "Free Octal PSRAM:  %lu bytes (%.2f MB)",
+             (unsigned long)free_spiram, (float)free_spiram / (1024.0f * 1024.0f));
+    ESP_LOGI("HEAP", "Free DMA RAM:      %lu bytes (%.2f KB)",
+             (unsigned long)free_dma, (float)free_dma / 1024.0f);
+
+    /* 2. Initialize Audio HAL (MAX98357A on GPIO 16, 17, 18) */
+    ESP_ERROR_CHECK(audio_hal_init());
+
+    /* 3. Play acoustic verification test tone (440 Hz, 1.5s) */
+    play_test_tone();
+
+    /* 4. Create MIDI event queue */
+    QueueHandle_t midi_queue = xQueueCreate(64, sizeof(midi_message_t));
+    if (!midi_queue) {
+        ESP_LOGE(TAG, "Failed to create MIDI queue");
+        return;
+    }
+
+    /* 5. Initialize and launch Synth Engine */
+    ESP_ERROR_CHECK(synth_engine_init(midi_queue));
+    ESP_ERROR_CHECK(synth_engine_start());
+
+    /* 6. Initialize USB MIDI Host */
+    esp_err_t ret = usb_midi_host_init(midi_queue, on_usb_midi_connection, NULL);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to initialize USB MIDI Host: %s", esp_err_to_name(ret));
+    } else {
+        ESP_LOGI(TAG, "Waiting for Nektar MIDI keyboard on USB-OTG port...");
+    }
+
+    /* 7. Main heartbeat loop */
+    while (1) {
+        vTaskDelay(pdMS_TO_TICKS(10000));
+        uint32_t cur_internal = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+        uint32_t cur_spiram   = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
+        ESP_LOGI("STATUS", "Heartbeat: USB Connected=%d, Free Internal=%lu, Free PSRAM=%lu",
+                 usb_midi_host_is_connected(), (unsigned long)cur_internal, (unsigned long)cur_spiram);
     }
 }

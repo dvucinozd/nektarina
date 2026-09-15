@@ -1,33 +1,35 @@
-# NEKTAR-P4
+# NEKTARINA - ESP32-S3 USB-MIDI Synthesizer (N16R8)
 
-Samostalni ESP32-P4 USB-MIDI synthesizer za Nektar Impact GX49.
+Repozitorij: [github.com/dvucinozd/nektarina](https://github.com/dvucinozd/nektarina.git)
 
-Arhitektura: [izvorni plan](ESP32-P4_MIDI_SYNTH_PLAN.md).
-M1 funkcionalno završen; sljedeći korak je [M2 integracija USB hosta](docs/M2_USB_HOST_ADOPTION_PLAN.md).
+Samostalni ESP32-S3 USB-MIDI synthesizer za Nektar klavijature (Impact GX49 i srodne).
 
-Za nastavak prvo pročitaj [trenutno stanje](docs/STATE_SUMMARY.md) i
-[sljedeću sesiju](docs/NEXT_SESSION.md). M1 kriteriji su u
-[audio bring-up planu](docs/M1_AUDIO_BRINGUP_PLAN.md).
+Arhitektura i migracija: [M0-S3 Migration Audit](docs/M0_S3_MIGRATION_AUDIT.md).
 
-Projekt sada sadrži BSP i M1 audio HAL. Boot provjerava ES8311 i šalje tišinu
-preko I2S-a s isključenim pojačalom. Ton se uključuje serijskom naredbom.
-[M1 naredbe i rezultati](docs/M1_AUDIO_TEST.md). USB, C6 i SD nisu pokrenuti.
-Dokumentacija dobavljača ostaje lokalno u `DEVICES_MANUALS` i nije dio Gita ni builda.
-Pravila sadržaja: [repozitorij i lokalni izvori](docs/REPOSITORY_CONTENTS.md).
+## Hardverska Konfiguracija
+- **MCU:** ESP32-S3 Dual-Core Xtensa LX7 @ 240 MHz
+- **Memorija:** 16 MB Octal Flash + 8 MB Octal PSRAM (`MALLOC_CAP_SPIRAM`)
+- **Audio izlaz:** MAX98357A I2S mono pojačalo
+  - BCLK: `GPIO 16`
+  - WS (LRC): `GPIO 17`
+  - DOUT: `GPIO 18`
+- **USB Host:** Integrirani USB OTG Full-Speed PHY (GPIO 19 D-, GPIO 20 D+)
 
-## Build (PowerShell, instalirani ESP-IDF 6.0.2)
+> [!CAUTION]
+> **GPIO 33–37 SU ZABRANJENI:** Ovi pinovi su na Octal modulu vezani za OPI sabirnicu.
+
+## Arhitektura Podsustava
+1. **audio_hal:** Moderni ESP-IDF I2S master driver (`driver/i2s_std.h`), 44.1 kHz 16-bit stereo.
+2. **usb_midi_host:** USB Host stog koji automatski prepoznaje Nektar / USB MIDI class-compliant kontrolere, dekodira 4-bajtne USB-MIDI pakete i šalje ih u FreeRTOS Queue.
+3. **synth_engine:**
+   - **Engine B (80s Virtual Analog):** 16 polifonih glasova, PolyBLEP Saw/Pulse oscilatori, rezonantni 2-polni State Variable Filter (SVF), ADSR omotnica, Pitch Bend i Mod Wheel.
+   - **Engine A (Grand Piano):** TinySoundFont SF2 player s alokacijom uzoraka u PSRAM-u.
+4. **app_main:** Memorijska telemetrija, 1.5s 440 Hz test ton za brzu zvučnu potvrdu MAX98357A pojačala, i dispečiranje MIDI događaja.
+
+## Build naredba (ESP-IDF 6.0.2)
 
 ```powershell
-. C:\Espressif\tools\Microsoft.v6.0.2.PowerShell_profile.ps1
+. C:\Espressif\v6.0.2\esp-idf\export.ps1
+idf.py set-target esp32s3
 idf.py build
 ```
-
-M0 koristi internu memoriju i početnu tvorničku particijsku tablicu ESP-IDF-a.
-Ovo nije OTA konfiguracija. PSRAM, frekvencije, OTA particije i periferije
-uvode se u pripadajućim fazama uz provjeru stvarnog hardvera.
-
-Na COM6 potvrđen je P4 v1.3; defaults su usklađeni na rev. 1.0-1.99 i 360 MHz.
-Instaliran je M1 `0.1.1-m1-mic`: ton i mikrofon potvrđeni, izmjereno 440.001 Hz
-u snimci. Aktualni image prošao je 602.020 s tona bez zabilježenih softverskih grešaka.
-Granice dokaza i aktualni hash: [M1 rezultati](docs/M1_AUDIO_TEST.md).
-Povijest: [M0 validacija](docs/M0_VALIDATION.md).

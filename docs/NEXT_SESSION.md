@@ -1,34 +1,28 @@
-# Nastavak nakon završenog M1 - 2026-09-13
+# Sljedeći Koraci (Next Session)
 
-## Prva radnja
+**Datum:** 2026-09-15  
+**Trenutno Stanje:** Firmware uspješno izgrađen i flashan na ESP32-S3 (N16R8) na COM12.
 
-Pregledati Git stanje i [STATE_SUMMARY](STATE_SUMMARY.md), zatim
-[M2 plan integracije](M2_USB_HOST_ADOPTION_PLAN.md). M1 0.1.1-m1-mic na COM6
-je kvalificirani funkcionalni baseline, utišan, PA off i DMA stop.
-Točan hash, završni soak i ograničenja mjerenja su u [M1 izvještaju](M1_AUDIO_TEST.md).
+---
 
-## Sljedeći razvojni korak
+## 1. Što je Završeno
+- [x] Migracija platforme s ESP32-P4 na ESP32-S3-WROOM-1-N16R8.
+- [x] Prepoznavanje 16 MB Flash i 8 MB Octal PSRAM memorije.
+- [x] Implementacija I2S drivera za MAX98357A (GPIO 16, 17, 18).
+- [x] Implementacija USB Host MIDI stoga (GPIO 19, 20) s parsiranjem 4-bajtnih USB-MIDI paketa.
+- [x] Implementacija 16-glasovnog 80s Virtual Analog synth enginea i integracija TinySoundFont-a u PSRAM-u.
+- [x] Zvučni testni ton 440 Hz (A4) na pokretanju.
 
-Izdvojiti minimalni host service i MIDI client/adapter iz postojećeg
-`D:/AI/PAJONIIIR-M3`, referentni commit
-`ccebdb96e302d8be8bf2b1269ee8afdad583e430`. Izvor je pregledan bez izmjena;
-nije još kopiran niti integriran. Točne datoteke i testovi su u M2 planu.
+---
 
-1. Provjeriti izvorni commit/stanje i lokalne upute prije prijenosa.
-2. Zadržati host lifecycle; prilagoditi FLX4 device filter i MIDI callback
-   GX49 adapteru, bez UAC/MSC/LED/control_link i tuđih BSP pretpostavki.
-3. Build za P4 v1.3 i ciljani descriptor/lifecycle testovi.
-4. Prije fizičkog M2 testa potvrditi USB priključak, kabel/adapter i napajanje
-   GX49; zatim snimiti stvarne deskriptore i connect/disconnect/reconnect.
-5. Spremiti mjerljive brojače/dokaze. Parser i synth note pripadaju M3/M4.
-
-## Što ne treba ponavljati
-
-- Backup imagea korisnik već ima. Ton i uredne prijelaze već je potvrdio.
-- Završni desetominutni soak aktualne mic verzije dovršen je; ne ponavljati ga
-  bez nove promjene, greške ili razloga za regresiju.
-- Ne flashati isti image bez potrebe. Boot i dalje treba biti tih.
-- Ne preuzimati pinove, napajanje ili PSRAM postavke iz drugog projekta.
-
-PCB fizička oznaka i neovisna clock kalibracija ostaju nezabilježeni.
-C6, SD, SoundFont, Wi-Fi i OTA nisu dio sljedećeg koraka.
+## 2. Sljedeće Fizičke Radnje (Korisnik)
+1. **Povezivanje MAX98357A pojačala:**
+   - `BCLK` -> `GPIO 16`
+   - `LRC / WS` -> `GPIO 17`
+   - `DIN` -> `GPIO 18`
+   - `VIN` -> `5V` (ili `3.3V`)
+   - `GND` -> `GND`
+   - Spojiti zvučnik (4 Ω / 8 Ω) na izlazne stezaljke pojačala.
+2. **Spajanje Nektar klavijature:**
+   - Povezati klavijaturu na USB-OTG USB-C priključak ESP32-S3 ploče.
+   - Pritisnuti tipke na klavijaturi i provjeriti `Note On` / `Note Off` logove u konzoli te zvuk na zvučniku.

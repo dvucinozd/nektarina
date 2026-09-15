@@ -1,30 +1,44 @@
-# Sadržaj repozitorija i lokalni izvori
+# Sadržaj Repozitorija i Struktura Projekta (nektarina)
 
-Repozitorij sadrži NEKTAR-P4 kod, konfiguraciju, planove i odabrane dokaze.
-Primarni framework je ESP-IDF 6.0.2; dobavljački demo projekti nisu build dependency.
+Repozitorij sadrži firmware, komponente i dokumentaciju za samostalni ESP32-S3 USB-MIDI sintetizator.
 
-## Lokalno, izvan Gita
+## Struktura Koda
 
-- `DEVICES_MANUALS/`: paket dobavljača JC-ESP32P4-M3-DEV0 i Nektar PDF.
-  U ovom workspaceu to je stvarno ime mape. Ignorirana je i alternativna
-  putanja `DEVICES/_MANUALS/` koju je korisnik naveo.
-- `AGENTS.md`: lokalne upute agentu, izričito isključene po zahtjevu korisnika.
-- `build*/`, `sdkconfig`, `sdkconfig.old`, `managed_components/`, `tmp/`:
-  generirani build/dependency sadržaj i privremene datoteke.
-- `backups/`: buduće kopije stvarnog firmwarea; ne objavljivati ih u repozitorij.
+```text
+├── CMakeLists.txt              # Vršni CMake konfiguracijski file (target esp32s3)
+├── sdkconfig.defaults          # Postavke za 16MB Flash, 8MB Octal PSRAM, USB Host, FreeRTOS 1000Hz
+├── main/
+│   ├── CMakeLists.txt          # Registracija aplikacije
+│   ├── app_main.c              # Boot sekvenca, telemetrija, test ton, kontrola
+│   └── idf_component.yml       # Upravljane ovisnosti (espressif/usb)
+├── components/
+│   ├── audio_hal/              # I2S master driver za MAX98357A mono pojačalo
+│   │   ├── CMakeLists.txt
+│   │   ├── include/audio_hal.h
+│   │   └── audio_hal.c
+│   ├── usb_midi_host/          # USB Host MIDI stog s paketnim parserom i hot-plugom
+│   │   ├── CMakeLists.txt
+│   │   ├── include/usb_midi_host.h
+│   │   └── usb_midi_host.c
+│   └── synth_engine/           # 16-glasovni 80s Virtual Analog + TinySoundFont (PSRAM)
+│       ├── CMakeLists.txt
+│       ├── include/synth_engine.h
+│       ├── include/tsf.h
+│       └── synth_engine.c
+└── docs/                       # Arhitektura, auditi, verifikacija i testni rezultati
+    ├── M0_S3_MIGRATION_AUDIT.md
+    ├── M0_COM12_S3_CHECK.md
+    ├── M0_VALIDATION.md
+    ├── M1_AUDIO_BRINGUP_PLAN.md
+    ├── M1_AUDIO_TEST.md
+    ├── M2_USB_HOST_ADOPTION_PLAN.md
+    ├── NEXT_SESSION.md
+    ├── REPOSITORY_CONTENTS.md
+    └── STATE_SUMMARY.md
+```
 
-Klon repozitorija dovoljan je za build uz instalirani IDF, ali ne sadrži
-vendor priručnike. Za ponovno detaljno provjeravanje hardvera lokalno vratiti
-isti paket dokumentacije u `DEVICES_MANUALS/`. Popis točnih korištenih izvora
-i putanja nalazi se u [M0 auditu](M0_HARDWARE_BSP_AUDIT.md).
-
-Dobavljački paket uključuje tuđe primjere, alate i generirane konfiguracije;
-ne tretirati ih kao naš izvorni kod ni automatski prenositi u repozitorij.
-Prije dodavanja vanjskog drivera zapisati verziju/commit, izvor i njegovu licencu.
-
-## Objavljivanje
-
-Pregledati staging i pokrenuti `git diff --cached --check`. Build je potreban
-za promjene koda/configa; za dokumentacijski checkpoint koristiti postojeći
-potvrđeni build ako se kod nije promijenio. Nakon pusha usporediti lokalni HEAD
-s `git ls-remote origin refs/heads/main`. Ne commitati lokalne backupove ili tajne.
+## Pravila i Ignorirane Datoteke (`.gitignore`)
+- `build*/`: Privremeni binarni artefakti
+- `sdkconfig`: Lokalna generirana Kconfig konfiguracija
+- `managed_components/`: Automatski preuzete komponente (IDF Component Manager)
+- `tmp/`, `backups/`: Privremene datoteke
