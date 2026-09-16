@@ -20,8 +20,8 @@ esp_err_t audio_hal_init(void)
              AUDIO_I2S_BCLK_PIN, AUDIO_I2S_WS_PIN, AUDIO_I2S_DOUT_PIN, AUDIO_SAMPLE_RATE);
 
     i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_0, I2S_ROLE_MASTER);
-    chan_cfg.dma_desc_num = 6;
-    chan_cfg.dma_frame_num = 256;
+    chan_cfg.dma_desc_num = 8;
+    chan_cfg.dma_frame_num = 128;
     chan_cfg.auto_clear = true;
 
     esp_err_t ret = i2s_new_channel(&chan_cfg, &s_tx_chan, NULL);
@@ -46,6 +46,7 @@ esp_err_t audio_hal_init(void)
             },
         },
     };
+    std_cfg.slot_cfg.slot_bit_width = I2S_SLOT_BIT_WIDTH_16BIT;
 
     ret = i2s_channel_init_std_mode(s_tx_chan, &std_cfg);
     if (ret != ESP_OK) {

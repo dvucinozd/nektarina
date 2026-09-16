@@ -102,17 +102,16 @@ void app_main(void)
     ESP_LOGI("HEAP", "Free DMA RAM:      %lu bytes (%.2f KB)",
              (unsigned long)free_dma, (float)free_dma / 1024.0f);
 
-    /* 2. Configure GPIO 4 as optional hardware MAX98357A SD_MODE enable (active HIGH) */
-    gpio_config_t sd_pin_cfg = {
-        .pin_bit_mask = (1ULL << GPIO_NUM_4),
-        .mode = GPIO_MODE_OUTPUT,
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE,
-    };
-    gpio_config(&sd_pin_cfg);
-    gpio_set_level(GPIO_NUM_4, 1);
+    /* 2. Configure GPIO 4 (SD_MODE) and GPIO 21 (GAIN) like in InvaderESP */
+    ESP_ERROR_CHECK(gpio_reset_pin(GPIO_NUM_4));
+    ESP_ERROR_CHECK(gpio_set_direction(GPIO_NUM_4, GPIO_MODE_OUTPUT));
+    ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_4, 1));
     ESP_LOGI(TAG, "MAX98357A SD_MODE enable pin set to HIGH on GPIO 4");
+
+    ESP_ERROR_CHECK(gpio_reset_pin(GPIO_NUM_21));
+    ESP_ERROR_CHECK(gpio_set_direction(GPIO_NUM_21, GPIO_MODE_OUTPUT));
+    ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_21, 1));
+    ESP_LOGI(TAG, "MAX98357A GAIN pin set to HIGH on GPIO 21");
 
     /* 3. Initialize Audio HAL (MAX98357A on GPIO 16, 17, 18) */
     ESP_ERROR_CHECK(audio_hal_init());
