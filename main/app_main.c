@@ -94,7 +94,7 @@ void app_main(void)
     ESP_LOGI("HEAP", "Free DMA RAM:      %lu bytes (%.2f KB)",
              (unsigned long)free_dma, (float)free_dma / 1024.0f);
 
-    /* 2. Configure GPIO 14 (SD_MODE) and GPIO 21 (GAIN) like in InvaderESP */
+    /* 2. Configure GPIO 14 (SD_MODE) and GPIO 21 (GAIN) */
     ESP_ERROR_CHECK(gpio_reset_pin(GPIO_NUM_14));
     ESP_ERROR_CHECK(gpio_set_direction(GPIO_NUM_14, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_14, 1));
@@ -102,49 +102,20 @@ void app_main(void)
 
     ESP_ERROR_CHECK(gpio_reset_pin(GPIO_NUM_21));
     ESP_ERROR_CHECK(gpio_set_direction(GPIO_NUM_21, GPIO_MODE_OUTPUT));
-    ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_21, 1));
-    ESP_LOGI(TAG, "MAX98357A GAIN pin set to HIGH on GPIO 21");
+    ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_21, 0));
+    ESP_LOGI(TAG, "MAX98357A GAIN pin set to LOW (12 dB gain) on GPIO 21");
 
     /* 3. Initialize Audio HAL (MAX98357A on GPIO 45, 3, 47) */
     ESP_ERROR_CHECK(audio_hal_init());
 
-    /* 4. Play acoustic verification test tones (600 Hz, amplitude 28000, 16 kHz rate) */
-    ESP_LOGI(TAG, "Playing 3 acoustic verification beeps (600 Hz loud, 16 kHz)...");
-    for (int b = 1; b <= 3; b++) {
-        ESP_LOGW("AUDIO_TEST", ">>> BEEP %d/3 START (Listen to speaker!) <<<", b);
-        play_diagnostic_beep(600.0f, 1.0f, 28000.0f);
-        ESP_LOGI("AUDIO_TEST", "--- BEEP %d/3 PAUSE ---", b);
-        vTaskDelay(pdMS_TO_TICKS(500));
-    }
-
-    /* 5. Create MIDI event queue */
+    /* 4. Create MIDI event queue */
     QueueHandle_t midi_queue = xQueueCreate(64, sizeof(midi_message_t));
     if (!midi_queue) {
         ESP_LOGE(TAG, "Failed to create MIDI queue");
         return;
     }
 
-    /* 6. Initialize and launch Synth Engine */
-    ESP_ERROR_CHECK(synth_engine_init(midi_queue));
-    ESP_ERROR_CHECK(synth_engine_start());
-
-    /* 7. Play 80s synth engine demonstration arpeggio (C4, E4, G4, C5) */
-    ESP_LOGI("SYNTH", "Playing 80s Virtual Analog demo arpeggio (C maj)...");
-    synth_engine_note_on(60, 127);
-    vTaskDelay(pdMS_TO_TICKS(220));
-    synth_engine_note_on(64, 127);
-    vTaskDelay(pdMS_TO_TICKS(220));
-    synth_engine_note_on(67, 127);
-    vTaskDelay(pdMS_TO_TICKS(220));
-    synth_engine_note_on(72, 127);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    synth_engine_note_off(60);
-    synth_engine_note_off(64);
-    synth_engine_note_off(67);
-    synth_engine_note_off(72);
-    ESP_LOGI("SYNTH", "Demo arpeggio complete.");
-
-    /* 8. Initialize USB MIDI Host */
+    /* 5. Initialize USB MIDI Host */
     esp_err_t ret = usb_midi_host_init(midi_queue, on_usb_midi_connection, NULL);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to initialize USB MIDI Host: %s", esp_err_to_name(ret));
@@ -152,21 +123,28 @@ void app_main(void)
         ESP_LOGI(TAG, "Waiting for Nektar MIDI keyboard on USB-OTG port...");
     }
 
-    /* 9. Main loop: repeating diagnostic audio pulses until USB MIDI keyboard is plugged in */
+    /* 6. Diagnostic loop: 4-second continuous 500 Hz tone, 1-second pause */
     int loop_count = 0;
+    bool synth_running = false;
+
     while (1) {
         if (!usb_midi_host_is_connected()) {
-            ESP_LOGW("AUDIO_TEST", "[Loop #%d] Pulsing synth note (C4, velocity 127) on BCLK=45, LRC=3, DIN=47...", loop_count + 1);
-            synth_engine_note_on(60, 127);
-            vTaskDelay(pdMS_TO_TICKS(800));
-            synth_engine_note_off(60);
-            vTaskDelay(pdMS_TO_TICKS(1200));
+            loop_count++;
+            ESP_LOGW("AUDIO_TEST", ">>> [Tone #%d] PLAYING 4-SECOND 500 Hz LOUD SINE (12dB gain, amp=24000) <<<", loop_count);
+            play_diagnostic_beep(500.0f, 4.0f, 24000.0f);
+            ESP_LOGI("AUDIO_TEST", "--- [Tone #%d] 1-second pause ---", loop_count);
+            vTaskDelay(pdMS_TO_TICKS(1000));
         } else {
-            vTaskDelay(pdMS_TO_TICKS(10000));
+            if (!synth_running) {
+                ESP_LOGI(TAG, "Nektar keyboard connected! Starting synth engine...");
+                ESP_ERROR_CHECK(synth_engine_init(midi_queue));
+                ESP_ERROR_CHECK(synth_engine_start());
+                synth_running = true;
+            }
+            vTaskDelay(pdMS_TO_TICKS(1000));
         }
 
-        loop_count++;
-        if (loop_count % 4 == 0) {
+        if (loop_count % 5 == 0) {
             uint32_t cur_internal = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
             uint32_t cur_spiram   = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
             ESP_LOGI("STATUS", "Heartbeat: USB Connected=%d, Free Internal=%lu, Free PSRAM=%lu",
