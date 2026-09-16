@@ -16,12 +16,9 @@ static const char *TAG = "app_main";
 #define TEST_TONE_DURATION  1.5f
 #define BUFFER_FRAMES       256
 
-static void play_test_tone(void)
+static void play_diagnostic_beep(float freq, float duration_s, float amplitude)
 {
-    ESP_LOGI("AUDIO", "Playing %.1f Hz test tone for %.1f seconds to verify MAX98357A...",
-             TEST_TONE_FREQ, TEST_TONE_DURATION);
-
-    size_t total_frames = (size_t)(AUDIO_SAMPLE_RATE * TEST_TONE_DURATION);
+    size_t total_frames = (size_t)(AUDIO_SAMPLE_RATE * duration_s);
     int16_t *buf = (int16_t *)heap_caps_malloc(BUFFER_FRAMES * 2 * sizeof(int16_t),
                                                MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
     if (!buf) {
@@ -30,48 +27,43 @@ static void play_test_tone(void)
     }
 
     float phase = 0.0f;
-    float phase_inc = (TEST_TONE_FREQ * 2.0f * (float)M_PI) / (float)AUDIO_SAMPLE_RATE;
+    float phase_inc = (freq * 2.0f * (float)M_PI) / (float)AUDIO_SAMPLE_RATE;
     size_t frames_rendered = 0;
+    size_t total_written = 0;
 
     while (frames_rendered < total_frames) {
         size_t chunk = total_frames - frames_rendered;
         if (chunk > BUFFER_FRAMES) chunk = BUFFER_FRAMES;
 
         for (size_t i = 0; i < chunk; i++) {
-            /* Smooth ramp in and ramp out to avoid pops/clicks */
-            float env = 1.0f;
-            size_t global_frame = frames_rendered + i;
-            size_t ramp_len = AUDIO_SAMPLE_RATE / 20; /* 50 ms ramp */
-
-            if (global_frame < ramp_len) {
-                env = (float)global_frame / (float)ramp_len;
-            } else if (global_frame > total_frames - ramp_len) {
-                env = (float)(total_frames - global_frame) / (float)ramp_len;
-            }
-
-            float sample = sinf(phase) * 0.5f * env;
+            float sample = sinf(phase);
             phase += phase_inc;
             if (phase >= 2.0f * (float)M_PI) {
                 phase -= 2.0f * (float)M_PI;
             }
 
-            int16_t pcm = (int16_t)(sample * 32767.0f);
+            int16_t pcm = (int16_t)(sample * amplitude);
             buf[i * 2 + 0] = pcm; /* Left */
             buf[i * 2 + 1] = pcm; /* Right */
         }
 
         size_t written = 0;
-        audio_hal_write(buf, chunk * 2 * sizeof(int16_t), &written, portMAX_DELAY);
+        esp_err_t err = audio_hal_write(buf, chunk * 2 * sizeof(int16_t), &written, portMAX_DELAY);
+        if (err != ESP_OK) {
+            ESP_LOGE("AUDIO", "audio_hal_write failed: %s", esp_err_to_name(err));
+        }
+        total_written += written;
         frames_rendered += chunk;
     }
 
-    /* Small silence flush */
+    /* Silence flush */
     memset(buf, 0, BUFFER_FRAMES * 2 * sizeof(int16_t));
     size_t written = 0;
     audio_hal_write(buf, BUFFER_FRAMES * 2 * sizeof(int16_t), &written, portMAX_DELAY);
 
     free(buf);
-    ESP_LOGI("AUDIO", "Test tone complete. MAX98357A audio hardware verified OK.");
+    ESP_LOGI("AUDIO", "Diagnostic beep (%.1f Hz, %.1fs) finished. Written: %u bytes.",
+             freq, duration_s, (unsigned)total_written);
 }
 
 static void on_usb_midi_connection(bool connected, void *user_ctx)
@@ -113,11 +105,17 @@ void app_main(void)
     ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_21, 1));
     ESP_LOGI(TAG, "MAX98357A GAIN pin set to HIGH on GPIO 21");
 
-    /* 3. Initialize Audio HAL (MAX98357A on GPIO 16, 17, 18) */
+    /* 3. Initialize Audio HAL (MAX98357A on GPIO 45, 3, 47) */
     ESP_ERROR_CHECK(audio_hal_init());
 
-    /* 4. Play acoustic verification test tone (440 Hz, 1.5s) */
-    play_test_tone();
+    /* 4. Play acoustic verification test tones (600 Hz, amplitude 28000, 16 kHz rate) */
+    ESP_LOGI(TAG, "Playing 3 acoustic verification beeps (600 Hz loud, 16 kHz)...");
+    for (int b = 1; b <= 3; b++) {
+        ESP_LOGW("AUDIO_TEST", ">>> BEEP %d/3 START (Listen to speaker!) <<<", b);
+        play_diagnostic_beep(600.0f, 1.0f, 28000.0f);
+        ESP_LOGI("AUDIO_TEST", "--- BEEP %d/3 PAUSE ---", b);
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
 
     /* 5. Create MIDI event queue */
     QueueHandle_t midi_queue = xQueueCreate(64, sizeof(midi_message_t));
@@ -132,13 +130,13 @@ void app_main(void)
 
     /* 7. Play 80s synth engine demonstration arpeggio (C4, E4, G4, C5) */
     ESP_LOGI("SYNTH", "Playing 80s Virtual Analog demo arpeggio (C maj)...");
-    synth_engine_note_on(60, 100);
-    vTaskDelay(pdMS_TO_TICKS(180));
-    synth_engine_note_on(64, 95);
-    vTaskDelay(pdMS_TO_TICKS(180));
-    synth_engine_note_on(67, 100);
-    vTaskDelay(pdMS_TO_TICKS(180));
-    synth_engine_note_on(72, 110);
+    synth_engine_note_on(60, 127);
+    vTaskDelay(pdMS_TO_TICKS(220));
+    synth_engine_note_on(64, 127);
+    vTaskDelay(pdMS_TO_TICKS(220));
+    synth_engine_note_on(67, 127);
+    vTaskDelay(pdMS_TO_TICKS(220));
+    synth_engine_note_on(72, 127);
     vTaskDelay(pdMS_TO_TICKS(1000));
     synth_engine_note_off(60);
     synth_engine_note_off(64);
@@ -158,11 +156,11 @@ void app_main(void)
     int loop_count = 0;
     while (1) {
         if (!usb_midi_host_is_connected()) {
-            ESP_LOGW("AUDIO_TEST", "Pulsing synth note (C4) on BCLK=45, LRC=3, DIN=47, SD=14...");
-            synth_engine_note_on(60, 110);
-            vTaskDelay(pdMS_TO_TICKS(400));
+            ESP_LOGW("AUDIO_TEST", "[Loop #%d] Pulsing synth note (C4, velocity 127) on BCLK=45, LRC=3, DIN=47...", loop_count + 1);
+            synth_engine_note_on(60, 127);
+            vTaskDelay(pdMS_TO_TICKS(800));
             synth_engine_note_off(60);
-            vTaskDelay(pdMS_TO_TICKS(2100));
+            vTaskDelay(pdMS_TO_TICKS(1200));
         } else {
             vTaskDelay(pdMS_TO_TICKS(10000));
         }

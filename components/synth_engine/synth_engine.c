@@ -21,7 +21,7 @@ static const char *TAG = "synth_engine";
 #define SYNTH_TASK_PRIORITY     19
 #define FRAMES_PER_BLOCK        128
 #define MAX_VOICES              16
-#define SAMPLE_RATE             44100.0f
+#define SAMPLE_RATE             ((float)AUDIO_SAMPLE_RATE)
 #define TWO_PI                  6.283185307179586f
 
 /* ADSR Stages */
@@ -382,8 +382,8 @@ static void synth_task(void *arg)
 
             /* Convert mixed float audio to 16-bit signed stereo with soft saturation */
             for (int i = 0; i < FRAMES_PER_BLOCK; i++) {
-                float l = mix_left[i] * s_master_volume * 0.45f;
-                float r = mix_right[i] * s_master_volume * 0.45f;
+                float l = mix_left[i] * s_master_volume * 0.85f;
+                float r = mix_right[i] * s_master_volume * 0.85f;
 
                 /* Soft clipping using fast tanh approximation */
                 if (l > 1.0f) l = 1.0f; else if (l < -1.0f) l = -1.0f;

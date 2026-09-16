@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define AUDIO_SAMPLE_RATE    44100
+#define AUDIO_SAMPLE_RATE    16000
 #define AUDIO_I2S_BCLK_PIN   GPIO_NUM_45
 #define AUDIO_I2S_WS_PIN     GPIO_NUM_3
 #define AUDIO_I2S_DOUT_PIN   GPIO_NUM_47
