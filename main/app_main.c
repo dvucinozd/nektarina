@@ -118,7 +118,23 @@ void app_main(void)
     ESP_ERROR_CHECK(synth_engine_init(midi_queue));
     ESP_ERROR_CHECK(synth_engine_start());
 
-    /* 6. Initialize USB MIDI Host */
+    /* 6. Play 80s synth engine demonstration arpeggio (C4, E4, G4, C5) */
+    ESP_LOGI("SYNTH", "Playing 80s Virtual Analog demo arpeggio (C maj)...");
+    synth_engine_note_on(60, 100);
+    vTaskDelay(pdMS_TO_TICKS(180));
+    synth_engine_note_on(64, 95);
+    vTaskDelay(pdMS_TO_TICKS(180));
+    synth_engine_note_on(67, 100);
+    vTaskDelay(pdMS_TO_TICKS(180));
+    synth_engine_note_on(72, 110);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    synth_engine_note_off(60);
+    synth_engine_note_off(64);
+    synth_engine_note_off(67);
+    synth_engine_note_off(72);
+    ESP_LOGI("SYNTH", "Demo arpeggio complete.");
+
+    /* 7. Initialize USB MIDI Host */
     esp_err_t ret = usb_midi_host_init(midi_queue, on_usb_midi_connection, NULL);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to initialize USB MIDI Host: %s", esp_err_to_name(ret));
