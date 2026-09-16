@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #define AUDIO_SAMPLE_RATE    44100
-#define AUDIO_I2S_BCLK_PIN   GPIO_NUM_16
-#define AUDIO_I2S_WS_PIN     GPIO_NUM_17
-#define AUDIO_I2S_DOUT_PIN   GPIO_NUM_18
+#define AUDIO_I2S_BCLK_PIN   GPIO_NUM_45
+#define AUDIO_I2S_WS_PIN     GPIO_NUM_3
+#define AUDIO_I2S_DOUT_PIN   GPIO_NUM_47
 
 /**
  * @brief Inicijalizacija I2S master kanala za MAX98357A mono pojačalo

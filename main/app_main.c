@@ -102,11 +102,11 @@ void app_main(void)
     ESP_LOGI("HEAP", "Free DMA RAM:      %lu bytes (%.2f KB)",
              (unsigned long)free_dma, (float)free_dma / 1024.0f);
 
-    /* 2. Configure GPIO 4 (SD_MODE) and GPIO 21 (GAIN) like in InvaderESP */
-    ESP_ERROR_CHECK(gpio_reset_pin(GPIO_NUM_4));
-    ESP_ERROR_CHECK(gpio_set_direction(GPIO_NUM_4, GPIO_MODE_OUTPUT));
-    ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_4, 1));
-    ESP_LOGI(TAG, "MAX98357A SD_MODE enable pin set to HIGH on GPIO 4");
+    /* 2. Configure GPIO 14 (SD_MODE) and GPIO 21 (GAIN) like in InvaderESP */
+    ESP_ERROR_CHECK(gpio_reset_pin(GPIO_NUM_14));
+    ESP_ERROR_CHECK(gpio_set_direction(GPIO_NUM_14, GPIO_MODE_OUTPUT));
+    ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_14, 1));
+    ESP_LOGI(TAG, "MAX98357A SD_MODE enable pin set to HIGH on GPIO 14");
 
     ESP_ERROR_CHECK(gpio_reset_pin(GPIO_NUM_21));
     ESP_ERROR_CHECK(gpio_set_direction(GPIO_NUM_21, GPIO_MODE_OUTPUT));
@@ -158,7 +158,7 @@ void app_main(void)
     int loop_count = 0;
     while (1) {
         if (!usb_midi_host_is_connected()) {
-            ESP_LOGW("AUDIO_TEST", "Pulsing synth note (C4)... Ako nista ne cujes: spoji pin SD (SD_MODE) na VIN (+5V) ili GPIO 4!");
+            ESP_LOGW("AUDIO_TEST", "Pulsing synth note (C4) on BCLK=45, LRC=3, DIN=47, SD=14...");
             synth_engine_note_on(60, 110);
             vTaskDelay(pdMS_TO_TICKS(400));
             synth_engine_note_off(60);
