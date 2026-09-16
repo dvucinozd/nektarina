@@ -77,13 +77,13 @@ NEKTARINA sustav sastoji se od četiri ključne hardverske cjeline:
 
 | ESP32-S3 Pin | MAX98357A Pin | Smjer Signala | Tip Signala | Preporučena Boja | Funkcija / Opis |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **GPIO 16** | **BCLK** | ESP32 $\to$ MAX | Digitalni takt | Žuta | I2S Bit Clock (1.4112 MHz za 44.1 kHz 16-bit stereo) |
-| **GPIO 17** | **LRC** | ESP32 $\to$ MAX | Digitalni takt | Plava | I2S Word Select / Left-Right Clock (44.1 kHz) |
-| **GPIO 18** | **DIN** | ESP32 $\to$ MAX | Digitalni podatci | Zelena | I2S Serial PCM Data stream |
+| **GPIO 45** | **BCLK** | ESP32 $\to$ MAX | Digitalni takt | Žuta | I2S Bit Clock (1.4112 MHz za 44.1 kHz 16-bit stereo) |
+| **GPIO 3** | **LRC** | ESP32 $\to$ MAX | Digitalni takt | Plava | I2S Word Select / Left-Right Clock (44.1 kHz) |
+| **GPIO 47** | **DIN** | ESP32 $\to$ MAX | Digitalni podatci | Zelena | I2S Serial PCM Data stream |
 | **5V / VIN** | **VIN** | Napajanje | +5V DC | Crvena | Glavno napajanje pojačala (preporučeno 5V za punu snagu od 3W) |
 | **GND** | **GND** | Masa | 0V DC | Crna | Zajednička referentna masa |
-| *Nije spojen* | **GAIN** | Konfiguracija | Plutajući (NC) | — | Tvornički zadano pojačanje od **12 dB** (ostaviti nepovezano) |
-| **VIN ili GPIO 4** | **SD / SD_MODE** | Kontrola / Omogućenje | +5V ili 3.3V (HIGH) | Narančasta | **OBVEZNO SPOJITI:** Budi pojačalo iz Shutdown stanja. Spojiti na **VIN (+5V)** na pojačalu ili na **GPIO 4** mikrokontrolera. Ako se ostavi nespojen, čip odlazi u Shutdown (tišina)! |
+| **GPIO 21 (ili NC)** | **GAIN** | Kontrola | Logička 1 (HIGH) | Smeđa | Firmware drži HIGH za maksimalno pojačanje od 15 dB (ili ostaviti nepovezano za 12 dB) |
+| **GPIO 14 (ili VIN)** | **SD / SD_MODE** | Kontrola / Omogućenje | +5V ili 3.3V (HIGH) | Narančasta | **OBVEZNO SPOJITI:** Budi pojačalo iz Shutdown stanja. Spojiti na **GPIO 14** (firmware ga drži HIGH) ili na **VIN (+5V)** na pojačalu! |
 
 #### MAX98357A Izlazi za Zvučnik
 | MAX98357A Pin | Odredište | Opis |
