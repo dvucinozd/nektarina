@@ -6,6 +6,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
+#include "driver/gpio.h"
 #include <math.h>
 #include <string.h>
 
@@ -101,24 +102,36 @@ void app_main(void)
     ESP_LOGI("HEAP", "Free DMA RAM:      %lu bytes (%.2f KB)",
              (unsigned long)free_dma, (float)free_dma / 1024.0f);
 
-    /* 2. Initialize Audio HAL (MAX98357A on GPIO 16, 17, 18) */
+    /* 2. Configure GPIO 4 as optional hardware MAX98357A SD_MODE enable (active HIGH) */
+    gpio_config_t sd_pin_cfg = {
+        .pin_bit_mask = (1ULL << GPIO_NUM_4),
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
+    gpio_config(&sd_pin_cfg);
+    gpio_set_level(GPIO_NUM_4, 1);
+    ESP_LOGI(TAG, "MAX98357A SD_MODE enable pin set to HIGH on GPIO 4");
+
+    /* 3. Initialize Audio HAL (MAX98357A on GPIO 16, 17, 18) */
     ESP_ERROR_CHECK(audio_hal_init());
 
-    /* 3. Play acoustic verification test tone (440 Hz, 1.5s) */
+    /* 4. Play acoustic verification test tone (440 Hz, 1.5s) */
     play_test_tone();
 
-    /* 4. Create MIDI event queue */
+    /* 5. Create MIDI event queue */
     QueueHandle_t midi_queue = xQueueCreate(64, sizeof(midi_message_t));
     if (!midi_queue) {
         ESP_LOGE(TAG, "Failed to create MIDI queue");
         return;
     }
 
-    /* 5. Initialize and launch Synth Engine */
+    /* 6. Initialize and launch Synth Engine */
     ESP_ERROR_CHECK(synth_engine_init(midi_queue));
     ESP_ERROR_CHECK(synth_engine_start());
 
-    /* 6. Play 80s synth engine demonstration arpeggio (C4, E4, G4, C5) */
+    /* 7. Play 80s synth engine demonstration arpeggio (C4, E4, G4, C5) */
     ESP_LOGI("SYNTH", "Playing 80s Virtual Analog demo arpeggio (C maj)...");
     synth_engine_note_on(60, 100);
     vTaskDelay(pdMS_TO_TICKS(180));
@@ -134,7 +147,7 @@ void app_main(void)
     synth_engine_note_off(72);
     ESP_LOGI("SYNTH", "Demo arpeggio complete.");
 
-    /* 7. Initialize USB MIDI Host */
+    /* 8. Initialize USB MIDI Host */
     esp_err_t ret = usb_midi_host_init(midi_queue, on_usb_midi_connection, NULL);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to initialize USB MIDI Host: %s", esp_err_to_name(ret));
@@ -142,12 +155,25 @@ void app_main(void)
         ESP_LOGI(TAG, "Waiting for Nektar MIDI keyboard on USB-OTG port...");
     }
 
-    /* 7. Main heartbeat loop */
+    /* 9. Main loop: repeating diagnostic audio pulses until USB MIDI keyboard is plugged in */
+    int loop_count = 0;
     while (1) {
-        vTaskDelay(pdMS_TO_TICKS(10000));
-        uint32_t cur_internal = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
-        uint32_t cur_spiram   = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
-        ESP_LOGI("STATUS", "Heartbeat: USB Connected=%d, Free Internal=%lu, Free PSRAM=%lu",
-                 usb_midi_host_is_connected(), (unsigned long)cur_internal, (unsigned long)cur_spiram);
+        if (!usb_midi_host_is_connected()) {
+            ESP_LOGW("AUDIO_TEST", "Pulsing synth note (C4)... Ako nista ne cujes: spoji pin SD (SD_MODE) na VIN (+5V) ili GPIO 4!");
+            synth_engine_note_on(60, 110);
+            vTaskDelay(pdMS_TO_TICKS(400));
+            synth_engine_note_off(60);
+            vTaskDelay(pdMS_TO_TICKS(2100));
+        } else {
+            vTaskDelay(pdMS_TO_TICKS(10000));
+        }
+
+        loop_count++;
+        if (loop_count % 4 == 0) {
+            uint32_t cur_internal = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+            uint32_t cur_spiram   = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
+            ESP_LOGI("STATUS", "Heartbeat: USB Connected=%d, Free Internal=%lu, Free PSRAM=%lu",
+                     usb_midi_host_is_connected(), (unsigned long)cur_internal, (unsigned long)cur_spiram);
+        }
     }
 }

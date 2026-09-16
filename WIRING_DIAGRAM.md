@@ -83,7 +83,7 @@ NEKTARINA sustav sastoji se od četiri ključne hardverske cjeline:
 | **5V / VIN** | **VIN** | Napajanje | +5V DC | Crvena | Glavno napajanje pojačala (preporučeno 5V za punu snagu od 3W) |
 | **GND** | **GND** | Masa | 0V DC | Crna | Zajednička referentna masa |
 | *Nije spojen* | **GAIN** | Konfiguracija | Plutajući (NC) | — | Tvornički zadano pojačanje od **12 dB** (ostaviti nepovezano) |
-| *Nije spojen* | **SD_MODE** | Konfiguracija | Plutajući (NC) | — | Stereo downmix u mono: $(L + R)/2$ (ostaviti nepovezano) |
+| **VIN ili GPIO 4** | **SD / SD_MODE** | Kontrola / Omogućenje | +5V ili 3.3V (HIGH) | Narančasta | **OBVEZNO SPOJITI:** Budi pojačalo iz Shutdown stanja. Spojiti na **VIN (+5V)** na pojačalu ili na **GPIO 4** mikrokontrolera. Ako se ostavi nespojen, čip odlazi u Shutdown (tišina)! |
 
 #### MAX98357A Izlazi za Zvučnik
 | MAX98357A Pin | Odredište | Opis |
@@ -146,7 +146,7 @@ Ukoliko povezujete USB žensku utičnicu (USB-A Female breakout) izravno na pino
    | Pin 4: GND          | <=== (iz GND rail)     | LRC  : GPIO 17          |
    +----------+----------+                        | DIN  : GPIO 18          |
               |                                   | GAIN : Nepospojen (12dB)|
-              v                                   | SD   : Nepospojen (mono)|
+              v                                   | SD   : Spojiti na VIN   |
    +---------------------+                        | SPK+ : Zvučnik (+)      |
    | Nektar Impact GX49  |                        | SPK- : Zvučnik (-)      |
    |   USB-MIDI Port     |                        +------------+------------+
