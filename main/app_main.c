@@ -102,8 +102,8 @@ void app_main(void)
 
     ESP_ERROR_CHECK(gpio_reset_pin(GPIO_NUM_21));
     ESP_ERROR_CHECK(gpio_set_direction(GPIO_NUM_21, GPIO_MODE_OUTPUT));
-    ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_21, 0));
-    ESP_LOGI(TAG, "MAX98357A GAIN pin set to LOW (12 dB gain) on GPIO 21");
+    ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_21, 1));
+    ESP_LOGI(TAG, "MAX98357A GAIN pin set to HIGH (6 dB standard gain) on GPIO 21");
 
     /* 3. Initialize Audio HAL (MAX98357A on GPIO 45, 3, 47) */
     ESP_ERROR_CHECK(audio_hal_init());
@@ -123,17 +123,26 @@ void app_main(void)
         ESP_LOGI(TAG, "Waiting for Nektar MIDI keyboard on USB-OTG port...");
     }
 
-    /* 6. Diagnostic loop: 4-second continuous 500 Hz tone, 1-second pause */
+    /* 6. Diagnostic loop: 3 distinct volume steps to diagnose clipping vs signal */
     int loop_count = 0;
     bool synth_running = false;
 
     while (1) {
         if (!usb_midi_host_is_connected()) {
             loop_count++;
-            ESP_LOGW("AUDIO_TEST", ">>> [Tone #%d] PLAYING 4-SECOND 500 Hz LOUD SINE (12dB gain, amp=24000) <<<", loop_count);
-            play_diagnostic_beep(500.0f, 4.0f, 24000.0f);
-            ESP_LOGI("AUDIO_TEST", "--- [Tone #%d] 1-second pause ---", loop_count);
-            vTaskDelay(pdMS_TO_TICKS(1000));
+            ESP_LOGW("AUDIO_TEST", "=== Test Cycle #%d ===", loop_count);
+
+            ESP_LOGW("AUDIO_TEST", "[Step 1] GENTLE 440 Hz (amp=2500, no clipping)...");
+            play_diagnostic_beep(440.0f, 1.5f, 2500.0f);
+            vTaskDelay(pdMS_TO_TICKS(500));
+
+            ESP_LOGW("AUDIO_TEST", "[Step 2] MEDIUM 554 Hz (amp=7000)...");
+            play_diagnostic_beep(554.0f, 1.5f, 7000.0f);
+            vTaskDelay(pdMS_TO_TICKS(500));
+
+            ESP_LOGW("AUDIO_TEST", "[Step 3] STRONG 659 Hz (amp=16000)...");
+            play_diagnostic_beep(659.0f, 1.5f, 16000.0f);
+            vTaskDelay(pdMS_TO_TICKS(1500));
         } else {
             if (!synth_running) {
                 ESP_LOGI(TAG, "Nektar keyboard connected! Starting synth engine...");
