@@ -14,6 +14,7 @@ Arhitektura i migracija: [M0-S3 Migration Audit](docs/M0_S3_MIGRATION_AUDIT.md).
   - WS (LRC): `GPIO 17`
   - DOUT: `GPIO 18`
 - **USB Host:** Integrirani USB OTG Full-Speed PHY (GPIO 19 D-, GPIO 20 D+)
+- **Shema spajanja:** Detaljne upute i pinout potražite u [WIRING_DIAGRAM.md](WIRING_DIAGRAM.md).
 
 > [!CAUTION]
 > **GPIO 33–37 SU ZABRANJENI:** Ovi pinovi su na Octal modulu vezani za OPI sabirnicu.

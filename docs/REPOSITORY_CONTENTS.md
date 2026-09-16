@@ -7,6 +7,8 @@ Repozitorij sadrži firmware, komponente i dokumentaciju za samostalni ESP32-S3 
 ```text
 ├── CMakeLists.txt              # Vršni CMake konfiguracijski file (target esp32s3)
 ├── sdkconfig.defaults          # Postavke za 16MB Flash, 8MB Octal PSRAM, USB Host, FreeRTOS 1000Hz
+├── AGENTS.md                   # Vodič i pravila za nastavak razvoja s AI agentima
+├── WIRING_DIAGRAM.md           # Hardverska shema spajanja i pinout (MAX98357A, USB, zvučnik)
 ├── main/
 │   ├── CMakeLists.txt          # Registracija aplikacije
 │   ├── app_main.c              # Boot sekvenca, telemetrija, test ton, kontrola
