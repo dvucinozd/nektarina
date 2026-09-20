@@ -18,5 +18,8 @@ CONFIG_USB_HOST_HW_BUFFER_BIAS_BALANCED=y
 # FreeRTOS takt
 CONFIG_FREERTOS_HZ=1000
 
+# Synth DSP koristi puni deklarirani takt ESP32-S3.
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+
 # Produkcijski boot je tih; ton se ukljucuje samo za dijagnostiku.
 CONFIG_NEKTARINA_BOOT_TEST_TONE=n
