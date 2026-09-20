@@ -11,7 +11,8 @@ Repozitorij sadrži firmware, komponente i dokumentaciju za samostalni ESP32-S3 
 ├── WIRING_DIAGRAM.md           # Hardverska shema spajanja i pinout (MAX98357A, USB, zvučnik)
 ├── main/
 │   ├── CMakeLists.txt          # Registracija aplikacije
-│   ├── app_main.c              # Boot sekvenca, telemetrija, test ton, kontrola
+│   ├── Kconfig.projbuild       # Opcionalni, zadano isključeni boot test-ton
+│   ├── app_main.c              # Audio/MIDI/synth boot sekvenca i telemetrija
 │   └── idf_component.yml       # Upravljane ovisnosti (espressif/usb)
 ├── components/
 │   ├── audio_hal/              # I2S master driver za MAX98357A mono pojačalo

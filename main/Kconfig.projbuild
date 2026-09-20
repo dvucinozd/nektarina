@@ -1,0 +1,10 @@
+menu "Nektarina firmware"
+
+    config NEKTARINA_BOOT_TEST_TONE
+        bool "Play a short 440 Hz diagnostic tone during boot"
+        default n
+        help
+            Plays a bounded test tone before the synth task starts. Keep this
+            disabled for normal use so boot remains silent until MIDI arrives.
+
+endmenu

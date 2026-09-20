@@ -1,5 +1,7 @@
 # M1 Audio Test - Rezultati i Verifikacija (ESP32-S3)
 
+> **Povijesni dokaz:** logovi ispod pripadaju ranijoj konfiguraciji `16/17/18`. Aktualni potvrđeni pinout je `45/3/47`, `SD_MODE=14`.
+
 **Datum:** 2026-09-15  
 **Firmware:** `nektar_s3_midi` v0.2.0-s3-midi  
 **Ploča:** ESP32-S3-WROOM-1-N16R8 na COM12  

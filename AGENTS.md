@@ -21,7 +21,7 @@ Ovaj projekt implementira samostalni hardverski synthesizer pogonjen mikrokontro
 
 ### 2.1 MCU i Memorija
 - **SoC:** ESP32-S3 (Dual-Core Xtensa® 32-bit LX7 @ 240 MHz)
-- **Flash:** 16 MB Octal SPI (OPI) High-Speed Flash (DIO / 80 MHz)
+- **Flash:** 16 MB, DIO / 80 MHz
 - **PSRAM:** 8 MB Octal SPI (OPI) High-Speed PSRAM (80 MHz)
 - **FreeRTOS Takt:** 1000 Hz (`CONFIG_FREERTOS_HZ=1000`)
 
@@ -36,9 +36,10 @@ Ovaj projekt implementira samostalni hardverski synthesizer pogonjen mikrokontro
 
 | Funkcija | ESP32-S3 GPIO | Periferija / Spojeno na | Napomena |
 | :--- | :--- | :--- | :--- |
-| **I2S BCLK** | **GPIO 16** | MAX98357A BCLK | Bit Clock (1.4112 MHz za 44.1 kHz 16-bit stereo) |
-| **I2S WS (LRC)** | **GPIO 17** | MAX98357A LRC | Word Select / Frame Clock (44.1 kHz) |
-| **I2S DOUT** | **GPIO 18** | MAX98357A DIN | Serijski PCM audio podatci |
+| **I2S BCLK** | **GPIO 45** | MAX98357A BCLK | Bit Clock (1.4112 MHz za 44.1 kHz 16-bit stereo) |
+| **I2S WS (LRC)** | **GPIO 3** | MAX98357A LRC | Word Select / Frame Clock (44.1 kHz) |
+| **I2S DOUT** | **GPIO 47** | MAX98357A DIN | Serijski PCM audio podatci |
+| **Audio SD_MODE** | **GPIO 14** | MAX98357A SD | Aktivno HIGH; Audio HAL upravlja shutdownom |
 | **USB D-** | **GPIO 19** | Nektar USB-C Port | Ugrađeni USB-OTG Full-Speed PHY D- |
 | **USB D+** | **GPIO 20** | Nektar USB-C Port | Ugrađeni USB-OTG Full-Speed PHY D+ |
 | *UART TX/RX* | *GPIO 43 / 44* | Console / Serial | UART 0 konzola za logiranje i programiranje (COM12) |
@@ -48,7 +49,7 @@ Ovaj projekt implementira samostalni hardverski synthesizer pogonjen mikrokontro
 - Nema I2C sabirnice, nema internih registara.
 - Čip radi potpuno autonomno čim prima I2S takt i podatke.
 - **GAIN:** Ostavljen nepospojen ($12\text{ dB}$ tvorničko pojačanje).
-- **SD_MODE:** Ostavljen nepospojen (hardverski downmix stereo signala u mono sumu: $\frac{L + R}{2}$).
+- **SD_MODE:** Spojen na GPIO 14 i njime upravlja `audio_hal`.
 
 ---
 
@@ -59,7 +60,7 @@ Ovaj projekt implementira samostalni hardverski synthesizer pogonjen mikrokontro
 ├── sdkconfig.defaults          # Konfiguracija za 16MB Flash, 8MB Octal PSRAM, USB Host, FreeRTOS
 ├── main/
 │   ├── CMakeLists.txt          # Registracija aplikacije s ovisnostima
-│   ├── app_main.c              # Inicijalizacijski pipeline, memorijska telemetrija, test ton, status
+│   ├── app_main.c              # Audio/MIDI/synth inicijalizacija i runtime telemetrija
 │   └── idf_component.yml       # Upravljana ovisnost: espressif/usb: "^1.5.0"
 ├── components/
 │   ├── audio_hal/              # I2S master driver za MAX98357A (esp_driver_i2s / driver/i2s_std.h)
@@ -117,15 +118,15 @@ Ovaj projekt implementira samostalni hardverski synthesizer pogonjen mikrokontro
 ## 4. Razvojno Okruženje i Naredbe
 
 - **ESP-IDF verzija:** `6.0.2`
-- **Putanja alata:** `C:\Espressif\v6.0.2\esp-idf`
-- **Python okruženje:** `C:\Espressif\python_env\idf6.0_py3.11_env\Scripts\python.exe`
+- **Putanja alata:** `C:\esp\v6.0.2\esp-idf`
+- **Python okruženje:** koristi okruženje koje aktivira ESP-IDF instalacija
 - **Serijski port:** `COM12` (brzina 115200 baud, flash 460800 baud)
 
 ### Naredbe za Build i Flash (PowerShell)
 
 1. **Aktivacija ESP-IDF okruženja:**
    ```powershell
-   . C:\Espressif\v6.0.2\esp-idf\export.ps1
+   . C:\esp\v6.0.2\esp-idf\export.ps1
    ```
 2. **Postavljanje targeta (ako se kreira novi build direktorij):**
    ```powershell
@@ -150,8 +151,8 @@ Ovaj projekt implementira samostalni hardverski synthesizer pogonjen mikrokontro
 ## 5. Zadaci za Daljnji Razvoj (Roadmap)
 
 1. **Fizički akustički test:**
-   - Spojiti zvučnik na MAX98357A stezaljke, te spojiti pojačalo na GPIO 16 (BCLK), 17 (WS), 18 (DOUT), 5V i GND.
-   - Poslušati 1.5s 440 Hz test ton pri bootu.
+   - Spojiti zvučnik na MAX98357A stezaljke; potvrđeni pinovi su GPIO 45 (BCLK), 3 (WS), 47 (DOUT), 14 (SD_MODE), 5V i GND.
+   - Produkcijski boot je tih; po potrebi uključiti kratki ton opcijom `CONFIG_NEKTARINA_BOOT_TEST_TONE`.
 2. **Test Nektar klavijature:**
    - Uključiti Nektar Impact GX49 u USB-OTG USB-C port ploče.
    - Provjeriti u logu:

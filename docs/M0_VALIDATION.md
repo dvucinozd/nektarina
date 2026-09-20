@@ -1,5 +1,7 @@
 # M0 Validacija - ESP32-S3 (2026-09-15)
 
+> **Povijesni rezultat:** tablice i logovi ispod opisuju tadašnji firmware. Aktualni potvrđeni MAX98357A pinout je `45/3/47`, `SD_MODE=14`; pogledati [WIRING_DIAGRAM.md](../WIRING_DIAGRAM.md).
+
 ## 1. Aktualni Build i Flash na COM12
 
 **PASS:** `idf.py build` i `idf.py -p COM12 flash` završeni s exit code 0 na ESP-IDF 6.0.2.

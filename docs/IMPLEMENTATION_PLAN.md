@@ -3,6 +3,16 @@
 **Datum plana:** 2026-09-19
 **Cilj:** dovesti projekt od trenutačnog dijagnostičkog firmwarea do pouzdanog ESP32-S3 USB-MIDI sintetizatora, uz reproducibilan build i dokazanu hot-plug stabilnost.
 
+## Status provedbe — 2026-09-20
+
+- Faza 0 završena: pinout, SD_MODE, nespojeni GAIN i 44.1 kHz potvrđeni su kao kanonska konfiguracija.
+- Faza 1 softverski završena: DIO/80 MHz/16 MB, Octal PSRAM/80 MHz, lockfile v3 i zadano isključen boot test-ton prolaze build.
+- Faza 2 implementirana: synth task je jedini kontinuirani I2S writer i pokreće se prije USB hosta.
+- Faza 3 implementirana u kodu: stroga MIDIStreaming/bulk-IN selekcija, odgođeni cleanup aktivnog transfera, drop brojač i init rollback. Potrebna je hardverska hot-plug potvrda.
+- Faze 4 i 5 osnovno implementirane: Nyquist/stability granice, ispravan release, I2S telemetrija, Audio HAL SD_MODE vlasništvo i deinit. Potrebni su DSP i hardverski testovi.
+- Faza 6 aktivna dokumentacija usklađena; povijesni M0/M1 zapisi označeni su kao povijesni.
+- Faza 7 ostaje otvorena do flashanja, funkcionalnog MIDI testa, 25 hot-plug ciklusa i soak testa.
+
 ## 1. Trenutačna polazna točka
 
 - Projekt se uspješno gradi s ESP-IDF 6.0.2 iz `C:\esp\v6.0.2\esp-idf`.

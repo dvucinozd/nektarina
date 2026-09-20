@@ -1,5 +1,7 @@
 # M1 - Audio Bring-Up Plan: MAX98357A I2S Mono Pojačalo
 
+> **Povijesni dokument:** pinout `16/17/18` ispod nije aktualan. Potvrđeni pinout je `45/3/47`, `SD_MODE=14`; pogledati [WIRING_DIAGRAM.md](../WIRING_DIAGRAM.md).
+
 **Status:** **M1 funkcionalno završen na ESP32-S3**. I2S driver, DMA cjevovod i testni ton potvrđeni.
 
 ---

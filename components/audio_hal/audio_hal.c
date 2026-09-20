@@ -1,5 +1,6 @@
 #include "audio_hal.h"
 #include "driver/i2s_std.h"
+#include "driver/gpio.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -9,11 +10,29 @@ static const char *TAG = "audio_hal";
 static i2s_chan_handle_t s_tx_chan = NULL;
 static bool s_initialized = false;
 
+esp_err_t audio_hal_set_muted(bool muted)
+{
+    return gpio_set_level(AUDIO_SD_MODE_PIN, muted ? 0 : 1);
+}
+
 esp_err_t audio_hal_init(void)
 {
     if (s_initialized) {
         ESP_LOGW(TAG, "audio_hal already initialized");
         return ESP_OK;
+    }
+
+    esp_err_t ret = gpio_reset_pin(AUDIO_SD_MODE_PIN);
+    if (ret != ESP_OK) {
+        return ret;
+    }
+    ret = gpio_set_direction(AUDIO_SD_MODE_PIN, GPIO_MODE_OUTPUT);
+    if (ret != ESP_OK) {
+        return ret;
+    }
+    ret = audio_hal_set_muted(true);
+    if (ret != ESP_OK) {
+        return ret;
     }
 
     ESP_LOGI(TAG, "Initializing MAX98357A I2S driver (BCLK=%d, WS=%d, DOUT=%d, %d Hz stereo 16-bit)",
@@ -23,7 +42,7 @@ esp_err_t audio_hal_init(void)
     chan_cfg.dma_desc_num = 8;
     chan_cfg.dma_frame_num = 128;
 
-    esp_err_t ret = i2s_new_channel(&chan_cfg, &s_tx_chan, NULL);
+    ret = i2s_new_channel(&chan_cfg, &s_tx_chan, NULL);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to allocate I2S channel: %s", esp_err_to_name(ret));
         return ret;
@@ -63,9 +82,40 @@ esp_err_t audio_hal_init(void)
         return ret;
     }
 
+    /* Keep the amplifier shut down until valid I2S clocks are stable. */
+    vTaskDelay(pdMS_TO_TICKS(50));
+    ret = audio_hal_set_muted(false);
+    if (ret != ESP_OK) {
+        i2s_channel_disable(s_tx_chan);
+        i2s_del_channel(s_tx_chan);
+        s_tx_chan = NULL;
+        return ret;
+    }
+
     s_initialized = true;
-    ESP_LOGI(TAG, "MAX98357A I2S driver initialized and channel enabled successfully");
+    ESP_LOGI(TAG, "MAX98357A I2S driver initialized; SD_MODE enabled on GPIO%d", AUDIO_SD_MODE_PIN);
     return ESP_OK;
+}
+
+esp_err_t audio_hal_deinit(void)
+{
+    esp_err_t first_err = audio_hal_set_muted(true);
+
+    if (s_tx_chan) {
+        esp_err_t ret = i2s_channel_disable(s_tx_chan);
+        if (first_err == ESP_OK && ret != ESP_OK) {
+            first_err = ret;
+        }
+
+        ret = i2s_del_channel(s_tx_chan);
+        if (first_err == ESP_OK && ret != ESP_OK) {
+            first_err = ret;
+        }
+        s_tx_chan = NULL;
+    }
+
+    s_initialized = false;
+    return first_err;
 }
 
 esp_err_t audio_hal_write(const void *src, size_t size, size_t *bytes_written, TickType_t timeout)
@@ -73,7 +123,7 @@ esp_err_t audio_hal_write(const void *src, size_t size, size_t *bytes_written, T
     if (!s_initialized || !s_tx_chan) {
         return ESP_ERR_INVALID_STATE;
     }
-    if (!src || size == 0) {
+    if (!src || !bytes_written || size == 0 || (size % (2 * sizeof(int16_t))) != 0) {
         return ESP_ERR_INVALID_ARG;
     }
 

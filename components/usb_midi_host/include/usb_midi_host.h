@@ -41,3 +41,8 @@ esp_err_t usb_midi_host_init(QueueHandle_t midi_queue, usb_midi_connection_cb_t 
  * @brief Provjera je li USB MIDI uređaj spojen i aktivan
  */
 bool usb_midi_host_is_connected(void);
+
+/**
+ * @brief Broj MIDI poruka odbačenih zbog punog reda od pokretanja drivera.
+ */
+uint32_t usb_midi_host_get_dropped_messages(void);

@@ -1,7 +1,7 @@
 # Trenutno stanje - ESP32-S3-WROOM-1-N16R8 Migracija
 
 ## Cilj i aktivna faza
-Samostalni USB-MIDI synthesizer: Nektar klavijatura -> USB Host (Full-Speed OTG GPIO 19/20) -> MIDI Queue -> Polyphonic Synth Engine (Core 1) -> I2S MAX98357A (GPIO 16/17/18).
+Samostalni USB-MIDI synthesizer: Nektar klavijatura -> USB Host (Full-Speed OTG GPIO 19/20) -> MIDI Queue -> Polyphonic Synth Engine (Core 1) -> I2S MAX98357A (BCLK=45, WS=3, DOUT=47, SD_MODE=14).
 
 **Status:**
 - Uspješno migrirano s eksperimentalne P4 platforme na produkcijski ESP32-S3 (N16R8).
@@ -13,8 +13,8 @@ Samostalni USB-MIDI synthesizer: Nektar klavijatura -> USB Host (Full-Speed OTG 
 
 ## Hardverska identifikacija
 - **MCU:** ESP32-S3 Dual-Core Xtensa LX7 @ 240 MHz
-- **Memorija:** 16 MB Octal Flash, 8 MB Octal PSRAM
-- **Audio:** MAX98357A: BCLK=GPIO16, WS=GPIO17, DOUT=GPIO18
+- **Memorija:** 16 MB Flash DIO/80 MHz, 8 MB Octal PSRAM/80 MHz
+- **Audio:** MAX98357A: BCLK=GPIO45, WS=GPIO3, DOUT=GPIO47, SD_MODE=GPIO14, GAIN nije spojen, 44.1 kHz
 - **USB:** Ugrađeni USB-OTG PHY: D-=GPIO19, D+=GPIO20
 
 ## Dokumentacija

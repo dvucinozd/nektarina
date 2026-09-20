@@ -12,6 +12,13 @@ typedef enum {
     SYNTH_MODE_SOUNDFONT      = 1,  /**< TinySoundFont SF2 Player (PSRAM allocated) */
 } synth_engine_mode_t;
 
+typedef struct {
+    uint32_t audio_write_errors;
+    uint32_t audio_short_writes;
+    uint8_t active_voices;
+    UBaseType_t task_stack_high_water;
+} synth_engine_status_t;
+
 /**
  * @brief Inicijalizacija sintetizatorskog podsustava
  *
@@ -65,3 +72,8 @@ void synth_engine_control_change(uint8_t cc, uint8_t val);
  * @return ESP_OK pri uspjehu
  */
 esp_err_t synth_engine_load_soundfont(const void *sf2_data, size_t size);
+
+/**
+ * @brief Dohvat trenutne telemetrije synth taska.
+ */
+esp_err_t synth_engine_get_status(synth_engine_status_t *status);

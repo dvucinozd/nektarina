@@ -1,5 +1,7 @@
 # M0-S3 - Hardware & Architecture Migration Audit: ESP32-S3-WROOM-1-N16R8
 
+> **Povijesni dokument:** pinout `16/17/18` i nepovezani SD_MODE iz ovog audita više nisu aktualni. Potvrđeni pinout je `45/3/47`, `SD_MODE=14`; pogledati [WIRING_DIAGRAM.md](../WIRING_DIAGRAM.md).
+
 **Datum:** 2026-09-15  
 **Verzija:** 0.2.0-s3-midi  
 **Status:** Migracija s ESP32-P4 na ESP32-S3 uspješno specificirana i implementirana.

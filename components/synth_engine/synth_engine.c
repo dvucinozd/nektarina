@@ -23,6 +23,8 @@ static const char *TAG = "synth_engine";
 #define MAX_VOICES              16
 #define SAMPLE_RATE             ((float)AUDIO_SAMPLE_RATE)
 #define TWO_PI                  6.283185307179586f
+#define RELEASE_TIME_SECONDS    0.350f
+#define FILTER_MAX_RATIO        0.45f
 
 /* ADSR Stages */
 typedef enum {
@@ -70,6 +72,18 @@ static float s_base_cutoff = 3000.0f;     /* CC 74 (Hz) */
 static float s_resonance = 0.5f;          /* CC 71 (0.05 to 0.95) */
 static float s_master_volume = 0.8f;      /* CC 7 */
 static uint32_t s_voice_age_counter = 0;
+static volatile uint32_t s_audio_write_errors = 0;
+static volatile uint32_t s_audio_short_writes = 0;
+static volatile uint8_t s_active_voice_count = 0;
+static volatile UBaseType_t s_task_stack_high_water = 0;
+static TickType_t s_last_audio_error_log_tick = 0;
+
+static inline float fast_sin_filter(float x)
+{
+    /* Fifth-order approximation; x is restricted to [0, 0.45*pi]. */
+    float x2 = x * x;
+    return x * (1.0f - x2 * (1.0f / 6.0f - x2 * (1.0f / 120.0f)));
+}
 
 /* PolyBLEP anti-aliasing residual */
 static inline float polyblep(float t, float dt)
@@ -91,6 +105,10 @@ static float midi_note_to_freq(uint8_t note)
 
 void synth_engine_set_mode(synth_engine_mode_t mode)
 {
+    if (mode == SYNTH_MODE_SOUNDFONT && !s_tsf) {
+        ESP_LOGW(TAG, "SoundFont mode rejected: no SF2 bank is loaded");
+        return;
+    }
     s_mode = mode;
     ESP_LOGI(TAG, "Synth mode set to: %s", (mode == SYNTH_MODE_VIRTUAL_ANALOG) ? "Virtual Analog" : "SoundFont (SF2)");
 }
@@ -102,6 +120,8 @@ synth_engine_mode_t synth_engine_get_mode(void)
 
 void synth_engine_note_on(uint8_t note, uint8_t velocity)
 {
+    if (note > 127) note = 127;
+    if (velocity > 127) velocity = 127;
     if (velocity == 0) {
         synth_engine_note_off(note);
         return;
@@ -152,11 +172,9 @@ void synth_engine_note_on(uint8_t note, uint8_t velocity)
     float attack_time = 0.008f;               /* 8 ms fast attack */
     float decay_time = 0.250f;                /* 250 ms decay */
     v->sustain_level = 0.65f;                 /* 65% sustain level */
-    float release_time = 0.350f;              /* 350 ms release */
-
     v->attack_step = 1.0f / (attack_time * SAMPLE_RATE);
     v->decay_step = (1.0f - v->sustain_level) / (decay_time * SAMPLE_RATE);
-    v->release_step = v->sustain_level / (release_time * SAMPLE_RATE);
+    v->release_step = v->sustain_level / (RELEASE_TIME_SECONDS * SAMPLE_RATE);
 
     v->env_stage = ENV_ATTACK;
     v->env_level = 0.0f;
@@ -175,6 +193,13 @@ void synth_engine_note_off(uint8_t note)
 
     for (int i = 0; i < MAX_VOICES; i++) {
         if (s_voices[i].active && s_voices[i].note == note) {
+            if (s_voices[i].env_stage != ENV_RELEASE) {
+                s_voices[i].release_step = s_voices[i].env_level /
+                                           (RELEASE_TIME_SECONDS * SAMPLE_RATE);
+                if (s_voices[i].release_step <= 0.0f) {
+                    s_voices[i].release_step = 1.0f / (RELEASE_TIME_SECONDS * SAMPLE_RATE);
+                }
+            }
             s_voices[i].env_stage = ENV_RELEASE;
         }
     }
@@ -182,6 +207,8 @@ void synth_engine_note_off(uint8_t note)
 
 void synth_engine_pitch_bend(int16_t bend)
 {
+    if (bend < -8192) bend = -8192;
+    if (bend > 8191) bend = 8191;
     /* Bend range: +/- 2 semitones */
     float semitones = ((float)bend / 8192.0f) * 2.0f;
     s_pitch_bend_ratio = powf(2.0f, semitones / 12.0f);
@@ -193,6 +220,8 @@ void synth_engine_pitch_bend(int16_t bend)
 
 void synth_engine_control_change(uint8_t cc, uint8_t val)
 {
+    if (cc > 127) cc = 127;
+    if (val > 127) val = 127;
     float norm = (float)val / 127.0f;
     switch (cc) {
     case 1: /* Mod Wheel */
@@ -228,20 +257,23 @@ esp_err_t synth_engine_load_soundfont(const void *sf2_data, size_t size)
     if (!sf2_data || size == 0) {
         return ESP_ERR_INVALID_ARG;
     }
-
-    ESP_LOGI(TAG, "Loading SoundFont (%u bytes) into PSRAM", (unsigned)size);
-    if (s_tsf) {
-        tsf_close(s_tsf);
-        s_tsf = NULL;
+    if (s_synth_task_handle != NULL) {
+        ESP_LOGE(TAG, "SoundFont must be loaded before synth_engine_start()");
+        return ESP_ERR_INVALID_STATE;
     }
 
-    s_tsf = tsf_load_memory(sf2_data, (int)size);
-    if (!s_tsf) {
+    ESP_LOGI(TAG, "Loading SoundFont (%u bytes) into PSRAM", (unsigned)size);
+    tsf *new_tsf = tsf_load_memory(sf2_data, (int)size);
+    if (!new_tsf) {
         ESP_LOGE(TAG, "Failed to parse SoundFont2 data");
         return ESP_FAIL;
     }
 
-    tsf_set_output(s_tsf, TSF_STEREO_INTERLEAVED, (int)SAMPLE_RATE, 0.0f);
+    tsf_set_output(new_tsf, TSF_STEREO_INTERLEAVED, (int)SAMPLE_RATE, 0.0f);
+    if (s_tsf) {
+        tsf_close(s_tsf);
+    }
+    s_tsf = new_tsf;
     ESP_LOGI(TAG, "SoundFont loaded successfully into PSRAM, presets=%d", tsf_get_presetcount(s_tsf));
     s_mode = SYNTH_MODE_SOUNDFONT;
     return ESP_OK;
@@ -257,6 +289,7 @@ static void synth_task(void *arg)
     int16_t *dma_buf = (int16_t *)heap_caps_malloc(dma_buf_size, MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
     if (!dma_buf) {
         ESP_LOGE(TAG, "FATAL: Failed to allocate I2S DMA buffer in internal RAM!");
+        s_synth_task_handle = NULL;
         vTaskDelete(NULL);
         return;
     }
@@ -285,6 +318,14 @@ static void synth_task(void *arg)
                 break;
             }
         }
+
+        uint8_t active_voices = 0;
+        for (int i = 0; i < MAX_VOICES; i++) {
+            if (s_voices[i].active && s_voices[i].env_stage != ENV_IDLE) {
+                active_voices++;
+            }
+        }
+        s_active_voice_count = active_voices;
 
         /* 2. Render Audio Block */
         if (s_mode == SYNTH_MODE_SOUNDFONT && s_tsf) {
@@ -347,7 +388,8 @@ static void synth_task(void *arg)
                     /* Square/Pulse with 50% duty + PolyBLEP */
                     float square = (t < 0.5f) ? 1.0f : -1.0f;
                     square += polyblep(t, dt);
-                    float t_half = fmodf(t + 0.5f, 1.0f);
+                    float t_half = t + 0.5f;
+                    if (t_half >= 1.0f) t_half -= 1.0f;
                     square -= polyblep(t_half, dt);
 
                     float raw_sample = 0.65f * saw + 0.35f * square;
@@ -361,12 +403,16 @@ static void synth_task(void *arg)
                     /* State Variable Resonant Filter (SVF) */
                     /* Dynamic cutoff: base + envelope modulation + mod wheel */
                     float cutoff = s_base_cutoff + (v->env_level * 3500.0f) + (s_mod_wheel * 4000.0f);
-                    if (cutoff > 18000.0f) cutoff = 18000.0f;
+                    const float max_cutoff = SAMPLE_RATE * FILTER_MAX_RATIO;
+                    if (cutoff > max_cutoff) cutoff = max_cutoff;
                     if (cutoff < 100.0f) cutoff = 100.0f;
 
-                    float f_coeff = 2.0f * sinf((float)M_PI * cutoff / SAMPLE_RATE);
-                    if (f_coeff > 0.85f) f_coeff = 0.85f;
                     float q_damp = 1.0f - (s_resonance * 0.90f);
+                    float angle = (float)M_PI * cutoff / SAMPLE_RATE;
+                    float f_coeff = 2.0f * fast_sin_filter(angle);
+                    float stability_limit = sqrtf(4.0f - q_damp * q_damp) - q_damp;
+                    stability_limit *= 0.95f;
+                    if (f_coeff > stability_limit) f_coeff = stability_limit;
 
                     v->svf_low += f_coeff * v->svf_band;
                     float svf_high = raw_sample - v->svf_low - (q_damp * v->svf_band);
@@ -380,7 +426,7 @@ static void synth_task(void *arg)
                 }
             }
 
-            /* Convert mixed float audio to 16-bit signed stereo with soft saturation */
+            /* Convert mixed float audio to 16-bit signed stereo with hard limiting. */
             for (int i = 0; i < FRAMES_PER_BLOCK; i++) {
                 float l = mix_left[i] * s_master_volume * 0.85f;
                 float r = mix_right[i] * s_master_volume * 0.85f;
@@ -396,15 +442,39 @@ static void synth_task(void *arg)
 
         /* 3. Output to MAX98357A via audio_hal_write */
         size_t written = 0;
-        audio_hal_write(dma_buf, dma_buf_size, &written, portMAX_DELAY);
+        esp_err_t err = audio_hal_write(dma_buf, dma_buf_size, &written, portMAX_DELAY);
+        if (err != ESP_OK) {
+            s_audio_write_errors++;
+        } else if (written != dma_buf_size) {
+            s_audio_short_writes++;
+        }
+        if (err != ESP_OK || written != dma_buf_size) {
+            TickType_t now = xTaskGetTickCount();
+            if ((now - s_last_audio_error_log_tick) >= pdMS_TO_TICKS(1000)) {
+                s_last_audio_error_log_tick = now;
+                ESP_LOGE(TAG, "I2S write failed: %s (%u/%u bytes), errors=%lu short=%lu",
+                         esp_err_to_name(err), (unsigned)written, (unsigned)dma_buf_size,
+                         (unsigned long)s_audio_write_errors,
+                         (unsigned long)s_audio_short_writes);
+            }
+        }
+        s_task_stack_high_water = uxTaskGetStackHighWaterMark(NULL);
     }
 }
 
 esp_err_t synth_engine_init(QueueHandle_t midi_in_queue)
 {
+    if (!midi_in_queue) {
+        return ESP_ERR_INVALID_ARG;
+    }
     s_midi_queue = midi_in_queue;
     memset(s_voices, 0, sizeof(s_voices));
     s_mode = SYNTH_MODE_VIRTUAL_ANALOG;
+    s_audio_write_errors = 0;
+    s_audio_short_writes = 0;
+    s_active_voice_count = 0;
+    s_task_stack_high_water = 0;
+    s_last_audio_error_log_tick = 0;
     ESP_LOGI(TAG, "synth_engine initialized with 16 polyphonic VA voices");
     return ESP_OK;
 }
@@ -423,5 +493,18 @@ esp_err_t synth_engine_start(void)
     }
 
     ESP_LOGI(TAG, "synth_task started successfully on Core 1 (Priority %d)", SYNTH_TASK_PRIORITY);
+    return ESP_OK;
+}
+
+esp_err_t synth_engine_get_status(synth_engine_status_t *status)
+{
+    if (!status) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    status->audio_write_errors = s_audio_write_errors;
+    status->audio_short_writes = s_audio_short_writes;
+    status->active_voices = s_active_voice_count;
+    status->task_stack_high_water = s_task_stack_high_water;
     return ESP_OK;
 }

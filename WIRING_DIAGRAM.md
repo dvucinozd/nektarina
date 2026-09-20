@@ -1,7 +1,7 @@
 # NEKTARINA - Hardverska Shema Spajanja (Wiring Diagram & Pinout)
 
 **Projekt:** NEKTARINA - Samostalni ESP32-S3 USB-MIDI Synthesizer  
-**Ciljni hardver:** ESP32-S3-WROOM-1-N16R8 (16 MB Octal Flash, 8 MB Octal PSRAM)  
+**Ciljni hardver:** ESP32-S3-WROOM-1-N16R8 (16 MB DIO Flash, 8 MB Octal PSRAM)
 **Dokument:** Hardverska shema povezivanja komponenata  
 **Verzija:** 0.2.0-s3-midi  
 
@@ -32,16 +32,17 @@ NEKTARINA sustav sastoji se od četiri ključne hardverske cjeline:
        +----------------------+----------------------+
                               |
                      [I2S Sabirnica]
-                     - GPIO 16: BCLK
-                     - GPIO 17: LRC (WS)
-                     - GPIO 18: DIN
+                     - GPIO 45: BCLK
+                     - GPIO 3: LRC (WS)
+                     - GPIO 47: DIN
+                     - GPIO 14: SD_MODE
                      - +5V & GND
                               |
                               v
        +---------------------------------------------+
        |         MAX98357A I2S Audio Pojačalo        |
        |  - GAIN: Ostavljen nepospojen (12 dB)       |
-       |  - SD_MODE: Ostavljen nepospojen (L+R sum)  |
+       |  - SD_MODE: GPIO 14                         |
        +----------------------+----------------------+
                               |
                      [Diferencijalni BTL]
@@ -82,8 +83,8 @@ NEKTARINA sustav sastoji se od četiri ključne hardverske cjeline:
 | **GPIO 47** | **DIN** | ESP32 $\to$ MAX | Digitalni podatci | Zelena | I2S Serial PCM Data stream |
 | **5V / VIN** | **VIN** | Napajanje | +5V DC | Crvena | Glavno napajanje pojačala (preporučeno 5V za punu snagu od 3W) |
 | **GND** | **GND** | Masa | 0V DC | Crna | Zajednička referentna masa |
-| **GPIO 21 (ili NC)** | **GAIN** | Kontrola | Logička 1 (HIGH) | Smeđa | Firmware drži HIGH za maksimalno pojačanje od 15 dB (ili ostaviti nepovezano za 12 dB) |
-| **GPIO 14 (ili VIN)** | **SD / SD_MODE** | Kontrola / Omogućenje | +5V ili 3.3V (HIGH) | Narančasta | **OBVEZNO SPOJITI:** Budi pojačalo iz Shutdown stanja. Spojiti na **GPIO 14** (firmware ga drži HIGH) ili na **VIN (+5V)** na pojačalu! |
+| **NC** | **GAIN** | Nije spojen | Hardverski default | — | Ostavljen nepospojen; firmware ne koristi GPIO21 |
+| **GPIO 14** | **SD / SD_MODE** | Kontrola / Omogućenje | Aktivno HIGH | Narančasta | Audio HAL drži LOW tijekom inicijalizacije taktova, zatim uključuje pojačalo |
 
 #### MAX98357A Izlazi za Zvučnik
 | MAX98357A Pin | Odredište | Opis |
@@ -127,9 +128,10 @@ Ukoliko povezujete USB žensku utičnicu (USB-A Female breakout) izravno na pino
                   +-------------------------+
                   |     ESP32-S3 N16R8      |
                   |                         |
-                  | [5V]               [16] |-----> [BCLK] MAX98357A
-                  | [GND]              [17] |-----> [LRC ] MAX98357A
-                  |                    [18] |-----> [DIN ] MAX98357A
+                  | [5V]               [45] |-----> [BCLK] MAX98357A
+                  | [GND]               [3] |-----> [LRC ] MAX98357A
+                  |                    [47] |-----> [DIN ] MAX98357A
+                  |                    [14] |-----> [SD  ] MAX98357A
                   |                         |
                   | [19]               [5V] |=====> [VIN ] MAX98357A
                   | [20]              [GND] |=====> [GND ] MAX98357A
@@ -142,11 +144,11 @@ Ukoliko povezujete USB žensku utičnicu (USB-A Female breakout) izravno na pino
    +---------------------+                        +-------------------------+
    | Pin 1: VBUS (+5V)   | <=== (iz 5V rail)      | VIN  : +5V              |
    | Pin 2: D-   (GPIO19)| <--- (bijela žica)     | GND  : GND              |
-   | Pin 3: D+   (GPIO20)| <--- (zelena žica)     | BCLK : GPIO 16          |
-   | Pin 4: GND          | <=== (iz GND rail)     | LRC  : GPIO 17          |
-   +----------+----------+                        | DIN  : GPIO 18          |
+   | Pin 3: D+   (GPIO20)| <--- (zelena žica)     | BCLK : GPIO 45          |
+   | Pin 4: GND          | <=== (iz GND rail)     | LRC  : GPIO 3           |
+   +----------+----------+                        | DIN  : GPIO 47          |
               |                                   | GAIN : Nepospojen (12dB)|
-              v                                   | SD   : Spojiti na VIN   |
+              v                                   | SD   : GPIO 14          |
    +---------------------+                        | SPK+ : Zvučnik (+)      |
    | Nektar Impact GX49  |                        | SPK- : Zvučnik (-)      |
    |   USB-MIDI Port     |                        +------------+------------+
@@ -170,7 +172,7 @@ Za najbolju kvalitetu zvuka i uklanjanje šuma/zujanja preporučujemo:
    - Spojite **elektrolitski kondenzator od 220 µF do 470 µF (10V–16V)** paralelno između `VIN` i `GND` pinova na samoj MAX98357A pločici.
    - Po želji dodajte i manji **keramički kondenzator od 100 nF** paralelno s elektrolitskim za apsorpciju visokofrekventnih smetnji.
 2. **Kratki I2S vodovi:**
-   - Žice za `BCLK` (GPIO 16), `LRC` (GPIO 17) i `DIN` (GPIO 18) neka budu što kraće (preporučeno do 10–15 cm) kako bi se spriječilo preslušavanje i degradacija takta od 1.4 MHz.
+   - Žice za `BCLK` (GPIO 45), `LRC` (GPIO 3) i `DIN` (GPIO 47) neka budu što kraće (preporučeno do 10–15 cm) kako bi se spriječilo preslušavanje i degradacija takta od 1.4 MHz.
 3. **Kvalitetno 5V napajanje:**
    - Pojačalo troši vršno do 600 mA pri glasnom zvuku na 4 Ω zvučniku. Nektar klavijatura troši oko 100–250 mA.
    - Koristite stabilno 5V napajanje od **minimalno 2A** spojeno na ESP32-S3 pločicu.
@@ -187,12 +189,8 @@ Za najbolju kvalitetu zvuka i uklanjanje šuma/zujanja preporučujemo:
 2. **Povezivanje zvučnika:**
    - Spojite zvučnik (4 Ω ili 8 Ω) na `SPK+` i `SPK-` terminale pojačala.
 3. **Uključivanje na računalo / napajanje (COM12):**
-   - Nakon spajanja USB kabela na UART port (COM12), unutar 1 sekunde trebate čuti **1.5-sekundni testni ton (440 Hz - komorni ton A4)**.
-   - U serijskom monitoru (`idf.py -p COM12 monitor`) potvrdite ispis:
-     ```text
-     I (MAIN) Playing 1.5s 440Hz Sine Test Tone via I2S...
-     I (MAIN) Test tone finished. System ready for MIDI!
-     ```
+   - Produkcijski firmware pokreće se tiho i čeka MIDI. Kratki 440 Hz ton može se privremeno uključiti opcijom `CONFIG_NEKTARINA_BOOT_TEST_TONE`.
+   - U serijskom monitoru (`idf.py -p COM12 monitor`) provjerite Audio HAL, synth i USB host inicijalizacijske poruke.
 4. **Spajanje Nektar klavijature:**
    - Uključite Nektar Impact GX49 u USB Host port.
    - U serijskom monitoru potvrdite poruku o detekciji uređaja:
