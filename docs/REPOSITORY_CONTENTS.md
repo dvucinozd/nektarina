@@ -34,6 +34,7 @@ Repozitorij sadrži firmware, komponente i dokumentaciju za samostalni ESP32-S3 
     ├── M0_VALIDATION.md
     ├── M1_AUDIO_BRINGUP_PLAN.md
     ├── M1_AUDIO_TEST.md
+    ├── M2_USB_MIDI_TEST.md
     ├── M2_USB_HOST_ADOPTION_PLAN.md
     ├── NEXT_SESSION.md
     ├── REPOSITORY_CONTENTS.md

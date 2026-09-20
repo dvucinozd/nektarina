@@ -8,10 +8,10 @@
 - Faza 0 završena: pinout, SD_MODE, nespojeni GAIN i 44.1 kHz potvrđeni su kao kanonska konfiguracija.
 - Faza 1 softverski završena: DIO/80 MHz/16 MB, Octal PSRAM/80 MHz, lockfile v3 i zadano isključen boot test-ton prolaze build.
 - Faza 2 implementirana: synth task je jedini kontinuirani I2S writer i pokreće se prije USB hosta.
-- Faza 3 implementirana u kodu: stroga MIDIStreaming/bulk-IN selekcija, odgođeni cleanup aktivnog transfera, drop brojač i init rollback. Potrebna je hardverska hot-plug potvrda.
+- Faza 3 implementirana i osnovno hardverski potvrđena na Nektar uređaju VID `2467`, PID `2033`: MIDIStreaming bulk-IN `0x81`, Note On/Off, velocity, reconnect i hot-unplug tijekom aktivne note rade bez crasha. Preostaje serija od 25 ciklusa.
 - Faze 4 i 5 osnovno implementirane: Nyquist/stability granice, ispravan release, I2S telemetrija, Audio HAL SD_MODE vlasništvo i deinit. Potrebni su DSP i hardverski testovi.
 - Faza 6 aktivna dokumentacija usklađena; povijesni M0/M1 zapisi označeni su kao povijesni.
-- Faza 7 ostaje otvorena do flashanja, funkcionalnog MIDI testa, 25 hot-plug ciklusa i soak testa.
+- Faza 7 djelomično završena: flash, boot, osnovni MIDI i jedan čisti reconnect/hot-unplug ciklus prolaze; ostaju pitch bend/CC, akustička potvrda, 25 hot-plug ciklusa i soak test.
 
 ## 1. Trenutačna polazna točka
 

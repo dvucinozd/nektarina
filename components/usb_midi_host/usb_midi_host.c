@@ -164,13 +164,12 @@ static void in_transfer_cb(usb_transfer_t *transfer)
         for (size_t i = 0; i + 4 <= bytes; i += 4) {
             parse_usb_midi_packet(&data[i]);
         }
-    } else if (transfer->status == USB_TRANSFER_STATUS_CANCELED ||
-               transfer->status == USB_TRANSFER_STATUS_NO_DEVICE) {
-        ESP_LOGI(TAG, "IN transfer cancelled or device disconnected (status=%d)", transfer->status);
+    } else {
+        /* A failed bulk transfer can precede DEV_GONE during unplug. Do not
+         * submit it again after the host has already invalidated the device. */
+        ESP_LOGW(TAG, "IN transfer stopped (status=%d); cleaning up device", transfer->status);
         request_device_cleanup();
         return;
-    } else {
-        ESP_LOGW(TAG, "IN transfer status: %d", transfer->status);
     }
 
     /* Resubmit transfer while device is connected */

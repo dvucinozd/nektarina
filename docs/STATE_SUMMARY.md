@@ -10,6 +10,7 @@ Samostalni USB-MIDI synthesizer: Nektar klavijatura -> USB Host (Full-Speed OTG 
 - Implementiran moderni USB MIDI Host stog s podrškom za hot-plug.
 - Implementiran hibridni synth engine: 16-glasovni 80s Virtual Analog + TinySoundFont SF2 u PSRAM-u.
 - Zabilježene striktne zabrane: GPIO 33–37 zabranjeni zbog interne Octal SPI sabirnice.
+- Hardverski potvrđeni boot na 240 MHz, Nektar USB MIDI enumeracija, Note On/Off, velocity te reconnect/hot-unplug tijekom aktivne note; osnovni test nema MIDI dropova ni I2S grešaka.
 
 ## Hardverska identifikacija
 - **MCU:** ESP32-S3 Dual-Core Xtensa LX7 @ 240 MHz
@@ -20,3 +21,4 @@ Samostalni USB-MIDI synthesizer: Nektar klavijatura -> USB Host (Full-Speed OTG 
 ## Dokumentacija
 - [M0-S3 Hardware & Architecture Audit](M0_S3_MIGRATION_AUDIT.md)
 - [Izvorni M1 Audio Bringup Plan (P4 referenca)](M1_AUDIO_BRINGUP_PLAN.md)
+- [M2 USB MIDI hardverski test](M2_USB_MIDI_TEST.md)
